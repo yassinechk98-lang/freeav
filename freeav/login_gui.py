@@ -20,6 +20,7 @@ from tkinter import font as tkfont
 from tkinter import ttk
 
 from . import __version__, login, qrcode, updater
+from .i18n import N_, _
 
 OFFERED_SETTING = "login_offered"
 
@@ -49,6 +50,16 @@ WIDTH, HEIGHT = 820, 580
 BRAND_W = 290
 CONTENT_W = 434
 HALF_W = (CONTENT_W - 14) // 2
+
+
+def tr(text) -> str:
+    """Traduit un texte venu de login.py : un login.Message (modele et valeurs, eux-memes
+    traduits s'il le faut) ou un texte fixe."""
+    template = getattr(text, "template", None)
+    if template is None:
+        return _(str(text))
+    params = {k: tr(v) if isinstance(v, login.Message) else v for k, v in text.params.items()}
+    return _(template).format(**params)
 
 
 # -- dessin -----------------------------------------------------------------------------
@@ -232,7 +243,7 @@ class Field(tk.Frame):
         on = isinstance(state, int) and bool(state & 0x2)  # Verr. Maj. (LockMask)
         if event.type == tk.EventType.KeyPress and event.keysym == "Caps_Lock":
             on = not on  # l'etat ne change qu'apres cette touche
-        self.caps.config(text="Verr. Maj. activé" if on else "")
+        self.caps.config(text=_("Verr. Maj. activé") if on else "")
 
     def _edited(self, on_change):
         if self.error_state:
@@ -341,9 +352,11 @@ class Button(Timers, tk.Canvas):
         self.text = text
         self.itemconfig(self.label, text=text)
 
-    def set_busy(self, on: bool, text: str = "Vérification"):
+    def set_busy(self, on: bool, text: str | None = None):
         if not self.winfo_exists():
             return
+        if text is None:
+            text = _("Vérification")
         self.busy = on
         if on:
             width = tkfont.Font(font=self.font).measure(text)
@@ -547,7 +560,7 @@ class Countdown(Timers, tk.Canvas):
 class StrengthMeter(tk.Frame):
     """Jauge de solidite du mot de passe."""
 
-    LABELS = ("", "Faible", "Moyen", "Bon", "Excellent")
+    LABELS = ("", N_("Faible"), N_("Moyen"), N_("Bon"), N_("Excellent"))
     COLORS = (DANGER, DANGER, WARN, LIME, ACCENT)
 
     def __init__(self, parent):
@@ -568,14 +581,15 @@ class StrengthMeter(tk.Frame):
     def update_for(self, password: str, nickname: str = ""):
         if not password:
             self.score, filled, color = 0, 0, BORDER
-            text, fg = "12 caractères ou plus", MUTED
+            text, fg = _("12 caractères ou plus"), MUTED
         else:
             self.score = login.strength(password, nickname)
             filled, color = max(self.score, 1), self.COLORS[self.score]
             if self.score:
-                text = self.LABELS[self.score]
+                text = _(self.LABELS[self.score])
             else:
-                text = "Trop court" if len(password) < login.MIN_PASSWORD else "Trop facile"
+                text = (_("Trop court") if len(password) < login.MIN_PASSWORD
+                        else _("Trop facile"))
             fg = color
         for i, item in enumerate(self.segments):
             self.canvas.itemconfig(item, fill=color if i < filled else BORDER)
@@ -742,9 +756,10 @@ def brand_background(height: int) -> str:
 class Brand(Timers, tk.Canvas):
     """Panneau de gauche : degrade avec halos, bouclier anime, nom et points forts."""
 
-    FEATURES = (("bolt", "Protection en temps réel", "Téléchargements, Bureau, clés USB"),
-                ("shield", "Analyse rapide en un clic", "Signatures, YARA et ClamAV"),
-                ("cloud-off", "Connexion 100 % locale", "Aucun compte en ligne"))
+    FEATURES = (("bolt", N_("Protection en temps réel"),
+                 N_("Téléchargements, Bureau, clés USB")),
+                ("shield", N_("Analyse rapide en un clic"), N_("Signatures, YARA et ClamAV")),
+                ("cloud-off", N_("Connexion 100 % locale"), N_("Aucun compte en ligne")))
 
     def __init__(self, parent):
         super().__init__(parent, width=BRAND_W, height=HEIGHT, highlightthickness=0, bd=0,
@@ -756,18 +771,20 @@ class Brand(Timers, tk.Canvas):
         self.rings = [self.create_oval(0, 0, 0, 0, outline=ACCENT, width=2) for _ in range(3)]
         draw_emblem(self, self.cx, self.cy, 1.15)
         self.create_text(self.cx, 236, text="FreeAV", fill=TEXT, font=(FONT, 24, "bold"))
-        self.create_text(self.cx, 268, text="Antivirus gratuit et libre", fill=MUTED,
+        self.create_text(self.cx, 268, text=_("Antivirus gratuit et libre"), fill=MUTED,
                          font=(FONT, 10))
         y = 336
         for icon, title, detail in self.FEATURES:
             round_rect(self, 34, y - 15, 64, y + 15, 9, outline="",
                        fill=mix(_hex(brand_rgb(49, y, HEIGHT)), ACCENT, 0.16))
             draw_icon(self, icon, 49, y, ACCENT_LIGHT)
-            self.create_text(78, y - 8, text=title, anchor="w", fill=TEXT, font=(FONT, 10, "bold"))
-            self.create_text(78, y + 9, text=detail, anchor="w", fill=MUTED, font=(FONT, 8))
+            self.create_text(78, y - 8, text=_(title), anchor="w", fill=TEXT,
+                             font=(FONT, 10, "bold"))
+            self.create_text(78, y + 9, text=_(detail), anchor="w", fill=MUTED, font=(FONT, 8))
             y += 56
         self.footer = self.create_text(self.cx, HEIGHT - 24, fill=FAINT, font=(FONT, 8),
-                                       text=f"FreeAV {__version__}  \u00b7  logiciel libre GPL-3.0")
+                                       text=_("FreeAV {version}  \u00b7  logiciel libre "
+                                              "GPL-3.0").format(version=__version__))
         self._paint_background(HEIGHT)
         self.bind("<Configure>", lambda e: self._paint_background(e.height))
         self.phase = 0.0
@@ -825,14 +842,14 @@ class AccessWindow(Timers, tk.Toplevel):
       - "setup" : creer l'acces ; "offer" : le proposer a la premiere ouverture.
     """
 
-    TITLES = {"open": "Connexion", "lock": "Verrouillé", "manage": "Connexion",
-              "setup": "Protéger l'accès", "offer": "Protéger l'accès"}
+    TITLES = {"open": N_("Connexion"), "lock": N_("Verrouillé"), "manage": N_("Connexion"),
+              "setup": N_("Protéger l'accès"), "offer": N_("Protéger l'accès")}
 
     def __init__(self, master, mode: str = "open"):
         super().__init__(master)
         self.mode = mode
         self.result = None
-        self.title(f"FreeAV - {self.TITLES[mode]}")
+        self.title("FreeAV - " + _(self.TITLES[mode]))
         self.configure(bg=SURFACE)
         self.resizable(False, False)
         x = max(0, (self.winfo_screenwidth() - WIDTH) // 2)
@@ -905,7 +922,8 @@ class AccessWindow(Timers, tk.Toplevel):
         for i in range(total):
             round_rect(c, i * 34, 0, i * 34 + 28, 4, 2, outline="",
                        fill=ACCENT if i < current else BORDER)
-        tk.Label(row, text=f"ÉTAPE {current} SUR {total}", bg=SURFACE, fg=FAINT,
+        tk.Label(row, text=_("ÉTAPE {current} SUR {total}").format(current=current, total=total),
+                 bg=SURFACE, fg=FAINT,
                  font=(FONT, 8, "bold")).pack(side="left", padx=(10, 0))
 
     def heading(self, parent, title: str, subtitle: str = "") -> None:
@@ -950,7 +968,7 @@ class AccessWindow(Timers, tk.Toplevel):
         if self.primary is not None and self.primary.winfo_exists():
             self.primary.invoke()
 
-    def work(self, fn, done, text: str = "Vérification") -> None:
+    def work(self, fn, done, text: str | None = None) -> None:
         """Lance fn() dans un fil (scrypt prend un instant), puis done(resultat, erreur)."""
         if self.busy:
             return
@@ -1005,11 +1023,11 @@ class AccessWindow(Timers, tk.Toplevel):
     def error(self, notice: Notice, exc: Exception, *fields) -> None:
         """Affiche un refus (ou une erreur inattendue) et secoue la fenetre."""
         if isinstance(exc, login.LoginError):
-            notice.show(str(exc))
+            notice.show(tr(exc.message))
         elif isinstance(exc, OSError):
-            notice.show(f"Impossible d'enregistrer : {exc}")
+            notice.show(_("Impossible d'enregistrer : {error}").format(error=exc))
         else:
-            notice.show(f"Erreur inattendue : {exc}")
+            notice.show(_("Erreur inattendue : {error}").format(error=exc))
         for f in fields:
             f.mark_error()
         if isinstance(exc, login.Locked):
@@ -1028,9 +1046,10 @@ class AccessWindow(Timers, tk.Toplevel):
                 return
             if left <= 0:
                 button.set_enabled(True)
-                notice.show("Vous pouvez réessayer.", "info")
+                notice.show(_("Vous pouvez réessayer."), "info")
                 return
-            notice.show(f"Trop d'essais. Réessayez dans {left} s.", "warn")
+            notice.show(_("Trop d'essais. Réessayez dans {seconds} s.").format(seconds=left),
+                        "warn")
             self.later(1000, tick, left - 1)
         tick()
 
@@ -1082,25 +1101,27 @@ class AccessWindow(Timers, tk.Toplevel):
         self.password = ""
         account = _account()
         titles = {
-            "open": ("Bon retour", "Entrez votre pseudo et votre mot de passe pour ouvrir FreeAV."),
-            "lock": ("FreeAV est verrouillé", "La protection continue en arrière-plan. "
-                     "Connectez-vous pour rouvrir la fenêtre."),
-            "manage": ("Confirmez que c'est vous", "Entrez votre mot de passe pour modifier "
-                       "la connexion à FreeAV."),
+            "open": (_("Bon retour"),
+                     _("Entrez votre pseudo et votre mot de passe pour ouvrir FreeAV.")),
+            "lock": (_("FreeAV est verrouillé"), _("La protection continue en arrière-plan. "
+                     "Connectez-vous pour rouvrir la fenêtre.")),
+            "manage": (_("Confirmez que c'est vous"), _("Entrez votre mot de passe pour "
+                       "modifier la connexion à FreeAV.")),
         }
         self.heading(c, *titles.get(self.mode, titles["open"]))
-        self.f_nick = self.field(c, "Pseudo", icon="user")
-        self.f_pass = self.field(c, "Mot de passe", icon="lock", secret=True, pady=(0, 6))
-        self.link_row(c, right=("Mot de passe oublié ?", self.show_forgot), pady=(0, 16))
+        self.f_nick = self.field(c, _("Pseudo"), icon="user")
+        self.f_pass = self.field(c, _("Mot de passe"), icon="lock", secret=True, pady=(0, 6))
+        self.link_row(c, right=(_("Mot de passe oublié ?"), self.show_forgot), pady=(0, 16))
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        label = {"lock": "Déverrouiller", "manage": "Continuer"}.get(self.mode, "Se connecter")
+        label = {"lock": _("Déverrouiller"), "manage": _("Continuer")}.get(self.mode,
+                                                                   _("Se connecter"))
         self.button(c, label, self.submit_login)
         if self.mode == "manage":
-            self.link_row(c, left=("Annuler", lambda: self.finish(None)))
+            self.link_row(c, left=(_("Annuler"), lambda: self.finish(None)))
         elif self.mode == "lock":
-            self.link_row(c, left=("Quitter FreeAV", lambda: self.finish(False)))
-        self.note(c, "Connexion locale : votre mot de passe et vos codes restent sur ce PC.")
+            self.link_row(c, left=(_("Quitter FreeAV"), lambda: self.finish(False)))
+        self.note(c, _("Connexion locale : votre mot de passe et vos codes restent sur ce PC."))
         if self.nickname:
             self.f_nick.set(self.nickname)
         if message:
@@ -1113,7 +1134,7 @@ class AccessWindow(Timers, tk.Toplevel):
     def submit_login(self):
         nickname, password = self.f_nick.get().strip(), self.f_pass.get()
         if not nickname or not password:
-            self.notice.show("Entrez votre pseudo et votre mot de passe.")
+            self.notice.show(_("Entrez votre pseudo et votre mot de passe."))
             (self.f_pass if nickname else self.f_nick).mark_error()
             self.shake()
             return
@@ -1135,25 +1156,26 @@ class AccessWindow(Timers, tk.Toplevel):
         c = self.screen()
         self.recovery_mode = recovery
         if recovery:
-            self.heading(c, "Code de secours", "Entrez l'un des codes de secours notés lors de "
-                         "la configuration. Chaque code ne sert qu'une fois.")
-            self.f_code = self.field(c, "Code de secours", icon="key", mono=True)
+            self.heading(c, _("Code de secours"), _("Entrez l'un des codes de secours notés "
+                         "lors de la configuration. Chaque code ne sert qu'une fois."))
+            self.f_code = self.field(c, _("Code de secours"), icon="key", mono=True)
         else:
-            self.heading(c, "Vérification en deux étapes", "Ouvrez Google Authenticator ou "
-                         "Microsoft Authenticator et entrez le code à 6 chiffres de FreeAV.")
+            self.heading(c, _("Vérification en deux étapes"), _("Ouvrez Google Authenticator "
+                         "ou Microsoft Authenticator et entrez le code à 6 chiffres de FreeAV."))
             self.boxes = CodeBoxes(c, lambda code: self.submit_code())
             self.boxes.pack(anchor="w")
             row = tk.Frame(c, bg=SURFACE)
             row.pack(fill="x", pady=(12, 16))
             Countdown(row).pack(side="left")
-            tk.Label(row, text="Le code change toutes les 30 secondes.", bg=SURFACE, fg=MUTED,
+            tk.Label(row, text=_("Le code change toutes les 30 secondes."), bg=SURFACE, fg=MUTED,
                      font=(FONT, 9)).pack(side="left", padx=(8, 0))
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        self.button(c, "Valider", self.submit_code)
-        self.link_row(c, left=("Retour", lambda: self.show_login()),
-                      right=("Utiliser l'application" if recovery else
-                             "Utiliser un code de secours", lambda: self.show_code(not recovery)))
+        self.button(c, _("Valider"), self.submit_code)
+        self.link_row(c, left=(_("Retour"), lambda: self.show_login()),
+                      right=(_("Utiliser l'application") if recovery else
+                             _("Utiliser un code de secours"),
+                             lambda: self.show_code(not recovery)))
         self.focus_later(self.f_code if recovery else self.boxes)
 
     def submit_code(self):
@@ -1161,7 +1183,7 @@ class AccessWindow(Timers, tk.Toplevel):
             return
         code = self.f_code.get() if self.recovery_mode else self.boxes.get()
         if len(code.strip()) < 6:
-            self.notice.show("Entrez le code en entier.")
+            self.notice.show(_("Entrez le code en entier."))
             self.shake()
             return
         self.work(lambda: login.verify(self.nickname, self.password, code), self._after_code)
@@ -1182,17 +1204,18 @@ class AccessWindow(Timers, tk.Toplevel):
     def _unlocked(self, result: login.Unlock):
         self.password = ""
         if self.mode == "manage":
-            self.show_manage("Il vous reste %d code(s) de secours." % result.recovery_left
-                             if result.recovery_used else None)
+            self.show_manage(_("Il vous reste {count} code(s) de secours.").format(
+                count=result.recovery_left) if result.recovery_used else None)
             return
         c = self.screen()
         self.check_mark(c).pack(anchor="w", pady=(0, 16))
-        self.heading(c, f"Bienvenue, {result.account.nickname}",
-                     "Ouverture de FreeAV…" if not result.recovery_used else
-                     f"Code de secours utilisé : il vous en reste {result.recovery_left}. "
-                     "Créez-en de nouveaux depuis le bouton « Connexion » quand vous voulez.")
+        self.heading(c, _("Bienvenue, {name}").format(name=result.account.nickname),
+                     _("Ouverture de FreeAV…") if not result.recovery_used else
+                     _("Code de secours utilisé : il vous en reste {count}. Créez-en de "
+                       "nouveaux depuis le bouton « Connexion » quand vous voulez.").format(
+                         count=result.recovery_left))
         if result.recovery_used:
-            self.button(c, "Continuer", lambda: self.finish(True))
+            self.button(c, _("Continuer"), lambda: self.finish(True))
         else:
             self.later(750, self.finish, True)
 
@@ -1202,28 +1225,28 @@ class AccessWindow(Timers, tk.Toplevel):
         c = self.screen()
         account = _account()
         otp = bool(account and account.otp)
-        self.heading(c, "Mot de passe oublié", (
-            "Prouvez que c'est vous avec le code à 6 chiffres de votre application "
-            "d'authentification ou avec un code de secours, puis choisissez un nouveau mot "
-            "de passe." if otp else "Prouvez que c'est vous avec l'un de vos codes de secours, "
-            "puis choisissez un nouveau mot de passe."))
+        self.heading(c, _("Mot de passe oublié"), (
+            _("Prouvez que c'est vous avec le code à 6 chiffres de votre application "
+              "d'authentification ou avec un code de secours, puis choisissez un nouveau mot "
+              "de passe.") if otp else _("Prouvez que c'est vous avec l'un de vos codes de "
+                                         "secours, puis choisissez un nouveau mot de passe.")))
         row = tk.Frame(c, bg=SURFACE)
         row.pack(fill="x", pady=(0, 12))
-        self.f_nick = Field(row, "Pseudo", icon="user", width=HALF_W)
+        self.f_nick = Field(row, _("Pseudo"), icon="user", width=HALF_W)
         self.f_nick.pack(side="left")
-        self.f_code = Field(row, "Code OTP ou de secours" if otp else "Code de secours",
+        self.f_code = Field(row, _("Code OTP ou de secours") if otp else _("Code de secours"),
                             icon="key", width=HALF_W, mono=True)
         self.f_code.pack(side="right")
-        self.f_new = self.field(c, "Nouveau mot de passe", icon="lock", secret=True, pady=(0, 8),
+        self.f_new = self.field(c, _("Nouveau mot de passe"), icon="lock", secret=True, pady=(0, 8),
                                 on_change=lambda v: self.meter.update_for(v, self.f_nick.get()))
         self.meter = StrengthMeter(c)
         self.meter.pack(fill="x", pady=(0, 12))
-        self.f_confirm = self.field(c, "Confirmez le mot de passe", icon="lock", secret=True)
+        self.f_confirm = self.field(c, _("Confirmez le mot de passe"), icon="lock", secret=True)
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        self.button(c, "Changer le mot de passe", self.submit_forgot)
-        self.link_row(c, left=("Retour à la connexion", lambda: self.show_login()),
-                      right=("Plus aucun code ?", self.show_no_code))
+        self.button(c, _("Changer le mot de passe"), self.submit_forgot)
+        self.link_row(c, left=(_("Retour à la connexion"), lambda: self.show_login()),
+                      right=(_("Plus aucun code ?"), self.show_no_code))
         if self.nickname:
             self.f_nick.set(self.nickname)
         self.focus_later(self.f_code if self.nickname else self.f_nick)
@@ -1232,15 +1255,15 @@ class AccessWindow(Timers, tk.Toplevel):
         nickname, code = self.f_nick.get().strip(), self.f_code.get()
         new, confirm = self.f_new.get(), self.f_confirm.get()
         if not nickname or not code.strip():
-            self.notice.show("Entrez votre pseudo et un code.")
+            self.notice.show(_("Entrez votre pseudo et un code."))
             (self.f_code if nickname else self.f_nick).mark_error()
             return self.shake()
         if problem := login.password_problem(new, nickname):
-            self.notice.show(problem)
+            self.notice.show(tr(problem))
             self.f_new.mark_error()
             return self.shake()
         if new != confirm:
-            self.notice.show("Les deux mots de passe ne sont pas identiques.")
+            self.notice.show(_("Les deux mots de passe ne sont pas identiques."))
             self.f_confirm.mark_error()
             return self.shake()
         self.nickname = nickname
@@ -1252,35 +1275,37 @@ class AccessWindow(Timers, tk.Toplevel):
             self.error(self.notice, exc, self.f_code)
             self.f_code.focus()
             return
-        left = (f" Il vous reste {result.recovery_left} code(s) de secours."
-                if result.recovery_used else "")
-        self.show_done("Mot de passe changé",
-                       "Connectez-vous maintenant avec votre nouveau mot de passe." + left,
-                       "Se connecter", lambda: self.show_login())
+        left = (" " + _("Il vous reste {count} code(s) de secours.").format(
+            count=result.recovery_left) if result.recovery_used else "")
+        self.show_done(_("Mot de passe changé"),
+                       _("Connectez-vous maintenant avec votre nouveau mot de passe.") + left,
+                       _("Se connecter"), lambda: self.show_login())
 
     def show_no_code(self):
         self.show_message(
-            "Plus aucun code ?",
-            "Sans code de votre application ni code de secours, le mot de passe ne peut pas "
-            "être changé : personne d'autre ne connaît vos codes, c'est ce qui protège "
-            "FreeAV.\n\nLa connexion n'est qu'un verrou pour la fenêtre de FreeAV : pour la "
-            f"retirer, supprimez le fichier {login.LOGIN_DB}. Vos réglages, la quarantaine "
-            "et la protection ne sont pas touchés.", self.show_forgot)
+            _("Plus aucun code ?"),
+            _("Sans code de votre application ni code de secours, le mot de passe ne peut pas "
+              "être changé : personne d'autre ne connaît vos codes, c'est ce qui protège "
+              "FreeAV.\n\nLa connexion n'est qu'un verrou pour la fenêtre de FreeAV : pour la "
+              "retirer, supprimez le fichier {path}. Vos réglages, la quarantaine "
+              "et la protection ne sont pas touchés.").format(path=login.LOGIN_DB),
+            self.show_forgot)
 
     # - creation de l'acces -
 
     def show_offer(self):
         c = self.screen()
-        pill = tk.Label(c, text="  NOUVEAU  ", bg=ACCENT_SOFT, fg=ACCENT_LIGHT,
+        pill = tk.Label(c, text="  " + _("NOUVEAU") + "  ", bg=ACCENT_SOFT, fg=ACCENT_LIGHT,
                         font=(FONT, 8, "bold"), pady=2)
         pill.pack(anchor="w", pady=(0, 12))
-        self.heading(c, "Protégez l'accès à FreeAV", "Sans votre pseudo et votre mot de passe, "
-                     "personne ne pourra ouvrir FreeAV, sortir un fichier de la quarantaine ni "
-                     "couper la protection depuis la fenêtre.")
-        for icon, text in (("user", "Un pseudo et un mot de passe à l'ouverture de FreeAV"),
-                           ("phone", "Un code à 6 chiffres sur votre téléphone (OTP), en option"),
-                           ("bolt", "La protection en arrière-plan continue sans connexion"),
-                           ("cloud-off", "Tout reste sur ce PC : aucun compte en ligne")):
+        self.heading(c, _("Protégez l'accès à FreeAV"), _("Sans votre pseudo et votre mot de "
+                     "passe, personne ne pourra ouvrir FreeAV, sortir un fichier de la "
+                     "quarantaine ni couper la protection depuis la fenêtre."))
+        for icon, text in (
+                ("user", _("Un pseudo et un mot de passe à l'ouverture de FreeAV")),
+                ("phone", _("Un code à 6 chiffres sur votre téléphone (OTP), en option")),
+                ("bolt", _("La protection en arrière-plan continue sans connexion")),
+                ("cloud-off", _("Tout reste sur ce PC : aucun compte en ligne"))):
             row = tk.Frame(c, bg=SURFACE)
             row.pack(fill="x", pady=(0, 10))
             ic = tk.Canvas(row, width=30, height=30, bg=SURFACE, highlightthickness=0, bd=0)
@@ -1291,11 +1316,11 @@ class AccessWindow(Timers, tk.Toplevel):
                                                                                  padx=(12, 0))
         buttons = tk.Frame(c, bg=SURFACE)
         buttons.pack(fill="x", pady=(14, 0))
-        self.button(buttons, "Configurer", self.show_account, width=HALF_W, side="left")
-        Button(buttons, "Plus tard", lambda: self.finish(None), kind="secondary",
+        self.button(buttons, _("Configurer"), self.show_account, width=HALF_W, side="left")
+        Button(buttons, _("Plus tard"), lambda: self.finish(None), kind="secondary",
                width=HALF_W).pack(side="right")
-        self.note(c, "Vous pourrez l'activer à tout moment avec le bouton « Connexion » de la "
-                  "fenêtre principale.", icon="shield")
+        self.note(c, _("Vous pourrez l'activer à tout moment avec le bouton « Connexion » de "
+                       "la fenêtre principale."), icon="shield")
 
     def show_account(self):
         c = self.screen()
@@ -1303,16 +1328,16 @@ class AccessWindow(Timers, tk.Toplevel):
         self.steps_row = tk.Frame(c, bg=SURFACE)
         self.steps_row.pack(fill="x")
         self._draw_steps(1)
-        self.heading(c, "Créez votre accès", "Votre mot de passe n'est jamais enregistré en "
-                     "clair : FreeAV n'en garde qu'une empreinte.")
-        self.f_nick = self.field(c, "Pseudo", icon="user",
+        self.heading(c, _("Créez votre accès"), _("Votre mot de passe n'est jamais enregistré "
+                     "en clair : FreeAV n'en garde qu'une empreinte."))
+        self.f_nick = self.field(c, _("Pseudo"), icon="user",
                                  on_change=lambda v: self.meter.update_for(self.f_pass.get(), v))
         row = tk.Frame(c, bg=SURFACE)
         row.pack(fill="x", pady=(0, 8))
-        self.f_pass = Field(row, "Mot de passe", icon="lock", secret=True, width=HALF_W,
+        self.f_pass = Field(row, _("Mot de passe"), icon="lock", secret=True, width=HALF_W,
                             on_change=lambda v: self.meter.update_for(v, self.f_nick.get()))
         self.f_pass.pack(side="left")
-        self.f_confirm = Field(row, "Confirmation", icon="lock", secret=True, width=HALF_W)
+        self.f_confirm = Field(row, _("Confirmation"), icon="lock", secret=True, width=HALF_W)
         self.f_confirm.pack(side="right")
         self.meter = StrengthMeter(c)
         self.meter.pack(fill="x", pady=(0, 14))
@@ -1324,19 +1349,19 @@ class AccessWindow(Timers, tk.Toplevel):
         words.pack(side="left", fill="x")
         title = tk.Frame(words, bg=FIELD)
         title.pack(anchor="w")
-        tk.Label(title, text="Code à usage unique (OTP)", bg=FIELD, fg=TEXT,
+        tk.Label(title, text=_("Code à usage unique (OTP)"), bg=FIELD, fg=TEXT,
                  font=(FONT, 10, "bold")).pack(side="left")
-        tk.Label(title, text=" RECOMMANDÉ ", bg=ACCENT_SOFT, fg=ACCENT_LIGHT,
+        tk.Label(title, text=" " + _("RECOMMANDÉ") + " ", bg=ACCENT_SOFT, fg=ACCENT_LIGHT,
                  font=(FONT, 7, "bold")).pack(side="left", padx=(8, 0))
-        tk.Label(words, text="Avec Google Authenticator ou Microsoft Authenticator", bg=FIELD,
+        tk.Label(words, text=_("Avec Google Authenticator ou Microsoft Authenticator"), bg=FIELD,
                  fg=MUTED, font=(FONT, 8)).pack(anchor="w")
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        self.button(c, "Continuer", self.submit_account)
+        self.button(c, _("Continuer"), self.submit_account)
         if self.mode == "offer":
-            self.link_row(c, left=("Retour", self.show_offer))
+            self.link_row(c, left=(_("Retour"), self.show_offer))
         else:
-            self.link_row(c, left=("Annuler", lambda: self.finish(None)))
+            self.link_row(c, left=(_("Annuler"), lambda: self.finish(None)))
         if self.nickname:
             self.f_nick.set(self.nickname)
         self.focus_later(self.f_nick)
@@ -1353,15 +1378,15 @@ class AccessWindow(Timers, tk.Toplevel):
     def submit_account(self):
         nickname, password = self.f_nick.get().strip(), self.f_pass.get()
         if problem := login.nickname_problem(nickname):
-            self.notice.show(problem)
+            self.notice.show(tr(problem))
             self.f_nick.mark_error()
             return self.shake()
         if problem := login.password_problem(password, nickname):
-            self.notice.show(problem)
+            self.notice.show(tr(problem))
             self.f_pass.mark_error()
             return self.shake()
         if password != self.f_confirm.get():
-            self.notice.show("Les deux mots de passe ne sont pas identiques.")
+            self.notice.show(_("Les deux mots de passe ne sont pas identiques."))
             self.f_confirm.mark_error()
             return self.shake()
         self.nickname, self.password = nickname, password
@@ -1370,7 +1395,7 @@ class AccessWindow(Timers, tk.Toplevel):
             self.show_qr()
         else:
             self.work(lambda: login.create(nickname, password), self._created,
-                      text="Enregistrement")
+                      text=_("Enregistrement"))
 
     def show_qr(self, enabling: bool = False):
         c = self.screen()
@@ -1379,29 +1404,31 @@ class AccessWindow(Timers, tk.Toplevel):
             self.secret = login.new_otp_secret()
         else:
             self.steps(c, 2, 3)
-        self.heading(c, "Scannez ce QR code", "Dans votre application d'authentification, "
-                     "touchez « + », puis « Scanner un code QR ».")
+        self.heading(c, _("Scannez ce QR code"), _("Dans votre application "
+                     "d'authentification, touchez « + », puis « Scanner un code QR »."))
         nickname = self.nickname or (_account() or login.Account("FreeAV", {})).nickname
         row = tk.Frame(c, bg=SURFACE)
         row.pack(fill="x", pady=(0, 14))
         QrView(row, login.otp_uri(self.secret, nickname)).pack(side="left", anchor="n")
         side = tk.Frame(row, bg=SURFACE)
         side.pack(side="left", fill="both", expand=True, padx=(20, 0))
-        tk.Label(side, text="Pas de caméra ?", bg=SURFACE, fg=TEXT,
+        tk.Label(side, text=_("Pas de caméra ?"), bg=SURFACE, fg=TEXT,
                  font=(FONT, 10, "bold")).pack(anchor="w")
-        tk.Label(side, text="Choisissez « Saisir une clé » et recopiez :", bg=SURFACE, fg=MUTED,
+        tk.Label(side, text=_("Choisissez « Saisir une clé » et recopiez :"), bg=SURFACE,
+                 fg=MUTED,
                  font=(FONT, 9), wraplength=200, justify="left").pack(anchor="w", pady=(2, 8))
         groups = login.format_secret(self.secret).split()
         key = tk.Label(side, text=" ".join(groups[:4]) + "\n" + " ".join(groups[4:]),
                        bg=FIELD, fg=TEXT, font=(MONO, 11, "bold"), justify="left", padx=10,
                        pady=8)
         key.pack(anchor="w")
-        Link(side, "Copier la clé", lambda: self._copy(self.secret, "Clé copiée.")).pack(
+        Link(side, _("Copier la clé"), lambda: self._copy(self.secret, _("Clé copiée."))).pack(
             anchor="w", pady=(8, 0))
-        tk.Label(side, text=f"Compte : {nickname} (FreeAV)\nType : basé sur l'heure",
+        tk.Label(side, text=_("Compte : {name} (FreeAV)\nType : basé sur l'heure").format(
+                     name=nickname),
                  bg=SURFACE, fg=FAINT, font=(FONT, 8), justify="left").pack(anchor="w",
                                                                              pady=(8, 0))
-        tk.Label(c, text="Entrez le code affiché par l'application", bg=SURFACE, fg=MUTED,
+        tk.Label(c, text=_("Entrez le code affiché par l'application"), bg=SURFACE, fg=MUTED,
                  font=(FONT, 9, "bold")).pack(anchor="w", pady=(0, 6))
         self.boxes = CodeBoxes(c, lambda code: self.submit_qr())
         self.boxes.pack(anchor="w", pady=(0, 12))
@@ -1409,8 +1436,8 @@ class AccessWindow(Timers, tk.Toplevel):
         self.notice.pack(fill="x")
         bottom = tk.Frame(c, bg=SURFACE)
         bottom.pack(fill="x")
-        self.button(bottom, "Vérifier", self.submit_qr, width=170, side="right")
-        Link(bottom, "Retour", (lambda: self.show_manage()) if enabling else
+        self.button(bottom, _("Vérifier"), self.submit_qr, width=170, side="right")
+        Link(bottom, _("Retour"), (lambda: self.show_manage()) if enabling else
              self.show_account).pack(side="left")
         self.focus_later(self.boxes)
 
@@ -1424,20 +1451,20 @@ class AccessWindow(Timers, tk.Toplevel):
             return
         code = self.boxes.get()
         if len(code) < 6:
-            self.notice.show("Entrez les 6 chiffres du code.")
+            self.notice.show(_("Entrez les 6 chiffres du code."))
             return self.shake()
         if self.enabling:
             self.work(lambda: login.enable_otp(self.secret, code), self._otp_enabled)
         else:
             nickname, password, secret = self.nickname, self.password, self.secret
             self.work(lambda: login.create(nickname, password, secret, code), self._created,
-                      text="Enregistrement")
+                      text=_("Enregistrement"))
 
     def _otp_enabled(self, _result, exc):
         if exc is not None:
             self.boxes.clear(error=True)
             return self.error(self.notice, exc)
-        self.show_manage("Code OTP activé : FreeAV le demandera à chaque connexion.")
+        self.show_manage(_("Code OTP activé : FreeAV le demandera à chaque connexion."))
 
     def _created(self, codes, exc):
         if exc is not None:
@@ -1448,19 +1475,20 @@ class AccessWindow(Timers, tk.Toplevel):
         otp = self.want_otp
 
         def done():
-            self.show_done("FreeAV est protégé", "À la prochaine ouverture, FreeAV demandera "
-                           "votre pseudo et votre mot de passe" + (", puis le code de votre "
-                                                                   "téléphone." if otp else "."),
-                           "Terminer", lambda: self.finish(True))
+            self.show_done(_("FreeAV est protégé"), _(
+                "À la prochaine ouverture, FreeAV demandera votre pseudo et votre mot de passe, "
+                "puis le code de votre téléphone.") if otp else _(
+                "À la prochaine ouverture, FreeAV demandera votre pseudo et votre mot de passe."),
+                _("Terminer"), lambda: self.finish(True))
         self.show_codes(codes, done, step=(3, 3) if otp else (2, 2))
 
     def show_codes(self, codes: list[str], then, step=None):
         c = self.screen()
         if step:
             self.steps(c, *step)
-        self.heading(c, "Notez vos codes de secours", "Si vous oubliez votre mot de passe ou "
-                     "perdez votre téléphone, chaque code permet une fois de reprendre la main. "
-                     "Ils ne seront plus affichés.")
+        self.heading(c, _("Notez vos codes de secours"), _("Si vous oubliez votre mot de passe "
+                     "ou perdez votre téléphone, chaque code permet une fois de reprendre la "
+                     "main. Ils ne seront plus affichés."))
         panel = tk.Canvas(c, width=CONTENT_W, height=150, bg=SURFACE, highlightthickness=0,
                           bd=0)
         panel.pack(anchor="w", pady=(0, 12))
@@ -1471,35 +1499,36 @@ class AccessWindow(Timers, tk.Toplevel):
             panel.create_text(x - 16, y, text=f"{i + 1}.", anchor="e", fill=FAINT,
                               font=(FONT, 9))
             panel.create_text(x, y, text=code, anchor="w", fill=TEXT, font=(MONO, 13, "bold"))
-        text = "Codes de secours FreeAV (chacun ne sert qu'une fois)\n" + "\n".join(codes) + "\n"
+        text = (_("Codes de secours FreeAV (chacun ne sert qu'une fois)") + "\n"
+                + "\n".join(codes) + "\n")
         actions = tk.Frame(c, bg=SURFACE)
         actions.pack(fill="x", pady=(0, 12))
-        Button(actions, "Copier", lambda: self._copy(text, "Codes copiés : collez-les dans un "
-                                                     "endroit sûr."), kind="secondary",
+        copied = _("Codes copiés : collez-les dans un endroit sûr.")
+        Button(actions, _("Copier"), lambda: self._copy(text, copied), kind="secondary",
                width=HALF_W, height=38).pack(side="left")
-        Button(actions, "Enregistrer…", lambda: self._save_codes(text),
+        Button(actions, _("Enregistrer…"), lambda: self._save_codes(text),
                kind="secondary", width=HALF_W, height=38).pack(side="right")
-        self.confirm_box = CheckBox(c, "J'ai mis ces codes en lieu sûr",
+        self.confirm_box = CheckBox(c, _("J'ai mis ces codes en lieu sûr"),
                                     lambda on: self.primary.set_enabled(on))
         self.confirm_box.pack(anchor="w", pady=(0, 12))
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        self.button(c, "Terminer", then)
+        self.button(c, _("Terminer"), then)
         self.primary.set_enabled(False)
 
     def _save_codes(self, text: str):
         name = filedialog.asksaveasfilename(
-            parent=self, title="Enregistrer les codes de secours", defaultextension=".txt",
-            initialfile="codes-de-secours-FreeAV.txt", filetypes=[("Texte", "*.txt")])
+            parent=self, title=_("Enregistrer les codes de secours"), defaultextension=".txt",
+            initialfile="codes-de-secours-FreeAV.txt", filetypes=[(_("Texte"), "*.txt")])
         if not name:
             return
         try:
             Path(name).write_text(text, encoding="utf-8")
         except OSError as exc:
-            self.notice.show(f"Impossible d'enregistrer : {exc}")
+            self.notice.show(_("Impossible d'enregistrer : {error}").format(error=exc))
             return
-        self.notice.show(f"Codes enregistrés dans {name}. Gardez ce fichier hors du PC "
-                         "(clé USB, papier...).", "success")
+        self.notice.show(_("Codes enregistrés dans {path}. Gardez ce fichier hors du PC "
+                           "(clé USB, papier...).").format(path=name), "success")
 
     def show_done(self, title: str, text: str, button: str, command):
         c = self.screen()
@@ -1511,7 +1540,7 @@ class AccessWindow(Timers, tk.Toplevel):
     def show_message(self, title: str, text: str, back):
         c = self.screen()
         self.heading(c, title, text)
-        self.button(c, "Retour", back, kind="secondary")
+        self.button(c, _("Retour"), back, kind="secondary")
 
     # - reglages -
 
@@ -1520,15 +1549,16 @@ class AccessWindow(Timers, tk.Toplevel):
         if account is None:
             return self.finish(True)
         c = self.screen()
-        self.heading(c, "Connexion à FreeAV", f"Connecté en tant que « {account.nickname} ». "
-                     "Ces réglages restent sur ce PC.")
+        self.heading(c, _("Connexion à FreeAV"), _("Connecté en tant que « {name} ». Ces "
+                     "réglages restent sur ce PC.").format(name=account.nickname))
         summary = tk.Canvas(c, width=CONTENT_W, height=64, bg=SURFACE, highlightthickness=0,
                             bd=0)
         summary.pack(anchor="w", pady=(0, 12))
         half = CONTENT_W / 2
         for i, (label, value, good) in enumerate((
-                ("Code OTP", "Activé" if account.otp else "Désactivé", account.otp),
-                ("Codes de secours", f"{len(account.recovery)} sur {login.RECOVERY_CODES}",
+                (_("Code OTP"), _("Activé") if account.otp else _("Désactivé"), account.otp),
+                (_("Codes de secours"), _("{count} sur {total}").format(
+                    count=len(account.recovery), total=login.RECOVERY_CODES),
                  len(account.recovery) > 2))):
             x = i * (half + 6)
             round_rect(summary, x + 1, 1, x + half - 7, 63, 10, fill=FIELD, outline=BORDER,
@@ -1539,34 +1569,36 @@ class AccessWindow(Timers, tk.Toplevel):
                                 outline="")
             summary.create_text(x + 32, 42, text=value, anchor="w", fill=TEXT,
                                 font=(FONT, 11, "bold"))
-        rows = [("lock", "Changer le mot de passe", "Le pseudo reste le même",
+        rows = [("lock", _("Changer le mot de passe"), _("Le pseudo reste le même"),
                  self.show_change_password, False)]
         if account.otp:
-            rows.append(("phone", "Désactiver le code OTP", "Le mot de passe suffira",
+            rows.append(("phone", _("Désactiver le code OTP"), _("Le mot de passe suffira"),
                          lambda: self.show_confirm(
-                             "Désactiver le code OTP ?", "FreeAV ne demandera plus que votre "
-                             "pseudo et votre mot de passe. Vous pourrez le réactiver.",
-                             "Désactiver", lambda: self._apply(login.disable_otp,
-                                                               "Code OTP désactivé.")), False))
+                             _("Désactiver le code OTP ?"), _("FreeAV ne demandera plus que "
+                             "votre pseudo et votre mot de passe. Vous pourrez le réactiver."),
+                             _("Désactiver"), lambda: self._apply(login.disable_otp,
+                                                                  _("Code OTP désactivé."))),
+                         False))
         else:
-            rows.append(("phone", "Activer le code OTP", "Google ou Microsoft Authenticator",
+            rows.append(("phone", _("Activer le code OTP"),
+                         _("Google ou Microsoft Authenticator"),
                          lambda: self.show_qr(enabling=True), False))
-        rows += [("key", "Nouveaux codes de secours", "Les anciens ne marcheront plus",
+        rows += [("key", _("Nouveaux codes de secours"), _("Les anciens ne marcheront plus"),
                   lambda: self.show_confirm(
-                      "Remplacer vos codes de secours ?", "Vous recevrez 8 nouveaux codes. Les "
-                      "anciens ne marcheront plus.", "Remplacer", self._renew), False),
-                 ("shield", "Retirer la connexion", "FreeAV s'ouvrira sans mot de passe",
+                      _("Remplacer vos codes de secours ?"), _("Vous recevrez 8 nouveaux codes. "
+                      "Les anciens ne marcheront plus."), _("Remplacer"), self._renew), False),
+                 ("shield", _("Retirer la connexion"), _("FreeAV s'ouvrira sans mot de passe"),
                   lambda: self.show_confirm(
-                      "Retirer la connexion ?", "FreeAV s'ouvrira de nouveau sans pseudo ni mot "
-                      "de passe. La protection n'est pas touchée.", "Retirer", self._remove,
-                      danger=True), True)]
+                      _("Retirer la connexion ?"), _("FreeAV s'ouvrira de nouveau sans pseudo ni "
+                      "mot de passe. La protection n'est pas touchée."), _("Retirer"),
+                      self._remove, danger=True), True)]
         for icon, text, detail, command, danger in rows:
             ActionRow(c, icon, text, detail, command, danger).pack(anchor="w", pady=(0, 8))
         self.notice = Notice(c)
         self.notice.pack(fill="x", pady=(4, 0))
         if message:
             self.notice.show(message, "success")
-        self.button(c, "Fermer", lambda: self.finish(True), kind="secondary")
+        self.button(c, _("Fermer"), lambda: self.finish(True), kind="secondary")
 
     def show_confirm(self, title: str, text: str, label: str, command, danger: bool = False):
         c = self.screen()
@@ -1575,57 +1607,57 @@ class AccessWindow(Timers, tk.Toplevel):
         self.notice.pack(fill="x")
         buttons = tk.Frame(c, bg=SURFACE)
         buttons.pack(fill="x")
-        Button(buttons, "Annuler", lambda: self.show_manage(), kind="secondary",
+        Button(buttons, _("Annuler"), lambda: self.show_manage(), kind="secondary",
                width=HALF_W).pack(side="left")
         self.button(buttons, label, command, kind="danger" if danger else "primary",
                     width=HALF_W, side="right")
 
     def _apply(self, fn, message: str):
         self.work(fn, lambda _r, exc: self.error(self.notice, exc) if exc
-                  else self.show_manage(message), text="Enregistrement")
+                  else self.show_manage(message), text=_("Enregistrement"))
 
     def _renew(self):
         self.work(login.renew_recovery_codes, lambda codes, exc: self.error(self.notice, exc)
                   if exc else self.show_codes(codes, lambda: self.show_manage(
-                      "Nouveaux codes de secours enregistrés.")), text="Enregistrement")
+                      _("Nouveaux codes de secours enregistrés."))), text=_("Enregistrement"))
 
     def _remove(self):
         def done(_r, exc):
             if exc:
                 return self.error(self.notice, exc)
-            self.show_done("Connexion retirée", "FreeAV s'ouvrira de nouveau sans mot de passe. "
-                           "Vous pouvez la réactiver à tout moment.", "Fermer",
+            self.show_done(_("Connexion retirée"), _("FreeAV s'ouvrira de nouveau sans mot de "
+                           "passe. Vous pouvez la réactiver à tout moment."), _("Fermer"),
                            lambda: self.finish(True))
-        self.work(login.disable, done, text="Enregistrement")
+        self.work(login.disable, done, text=_("Enregistrement"))
 
     def show_change_password(self):
         c = self.screen()
         account = _account()
         nickname = account.nickname if account else ""
-        self.heading(c, "Nouveau mot de passe", "Choisissez un mot de passe d'au moins 12 "
-                     "caractères, par exemple trois mots séparés par des tirets.")
-        self.f_new = self.field(c, "Nouveau mot de passe", icon="lock", secret=True, pady=(0, 8),
+        self.heading(c, _("Nouveau mot de passe"), _("Choisissez un mot de passe d'au moins 12 "
+                     "caractères, par exemple trois mots séparés par des tirets."))
+        self.f_new = self.field(c, _("Nouveau mot de passe"), icon="lock", secret=True, pady=(0, 8),
                                 on_change=lambda v: self.meter.update_for(v, nickname))
         self.meter = StrengthMeter(c)
         self.meter.pack(fill="x", pady=(0, 12))
-        self.f_confirm = self.field(c, "Confirmez le mot de passe", icon="lock", secret=True)
+        self.f_confirm = self.field(c, _("Confirmez le mot de passe"), icon="lock", secret=True)
         self.notice = Notice(c)
         self.notice.pack(fill="x")
-        self.button(c, "Enregistrer", lambda: self._save_password(nickname))
-        self.link_row(c, left=("Retour", lambda: self.show_manage()))
+        self.button(c, _("Enregistrer"), lambda: self._save_password(nickname))
+        self.link_row(c, left=(_("Retour"), lambda: self.show_manage()))
         self.focus_later(self.f_new)
 
     def _save_password(self, nickname: str):
         new = self.f_new.get()
         if problem := login.password_problem(new, nickname):
-            self.notice.show(problem)
+            self.notice.show(tr(problem))
             self.f_new.mark_error()
             return self.shake()
         if new != self.f_confirm.get():
-            self.notice.show("Les deux mots de passe ne sont pas identiques.")
+            self.notice.show(_("Les deux mots de passe ne sont pas identiques."))
             self.f_confirm.mark_error()
             return self.shake()
-        self._apply(lambda: login.change_password(new), "Mot de passe changé.")
+        self._apply(lambda: login.change_password(new), _("Mot de passe changé."))
 
 
 def _lerp(a, b, t):
@@ -1717,9 +1749,9 @@ def attach(app, offer_now: bool = True) -> None:
     """Ajoute « Connexion... » et « Verrouiller » au bandeau de la fenetre principale, et
     propose la connexion une fois si la politique de confidentialite est deja acceptee (sinon,
     la proposition suit sa validation)."""
-    app.login_btn = ttk.Button(app.banner, text="Connexion...", command=lambda: manage(app))
+    app.login_btn = ttk.Button(app.banner, text=_("Connexion..."), command=lambda: manage(app))
     app.login_btn.pack(side="right", padx=6)
-    app.lock_btn = ttk.Button(app.banner, text="Verrouiller", command=lambda: lock(app))
+    app.lock_btn = ttk.Button(app.banner, text=_("Verrouiller"), command=lambda: lock(app))
     refresh(app)
     from . import privacy
     if offer_now and not privacy.needs_first_run():
