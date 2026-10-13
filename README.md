@@ -107,6 +107,35 @@ DNS. FreeAV les signale "DEFINITIF" et demande une confirmation (`--yes` en lign
 point de restauration systeme est cree avant de reparer si FreeAV est lance en administrateur,
 ce qui est necessaire pour les reglages communs a tout le PC (HKLM, hosts, Defender, SFC).
 
+## Connexion a FreeAV (optionnelle)
+
+Le bouton **Connexion...** de la fenetre principale protege l'ouverture de FreeAV par un pseudo et
+un mot de passe (12 caracteres au moins), avec en option un code a usage unique (OTP) a 6 chiffres
+donne par Google Authenticator, Microsoft Authenticator ou une autre application TOTP (QR code a
+scanner). FreeAV la propose une fois a la premiere ouverture : on peut la passer, l'activer plus
+tard, la modifier ou la retirer.
+
+- **Tout reste sur le PC** : pas de compte en ligne ni de serveur. Le compte est dans une base
+  SQLite, `~/.freeav/freeav.db` (`C:\Users\<vous>\.freeav\freeav.db`), qui ne garde que des
+  empreintes scrypt du mot de passe et des codes de secours, et la cle OTP chiffree par Windows
+  (DPAPI : elle ne sert que dans votre session Windows).
+- **Mot de passe oublie** : un code de l'application OTP, ou l'un des 8 codes de secours affiches a
+  la creation (chacun ne sert qu'une fois), permet d'en choisir un nouveau.
+- **Essais limites** : apres 5 erreurs, FreeAV impose une attente de 30 secondes, qui double a chaque
+  nouvelle erreur (15 minutes au plus). Un code OTP deja utilise est refuse.
+- **Verrouiller** (ou Ctrl+L) cache la fenetre jusqu'a la prochaine connexion. La protection en temps
+  reel, la surveillance des cles USB et les taches quotidiennes continuent sans connexion.
+- **Ce n'est pas un coffre-fort** : la connexion verrouille la fenetre de FreeAV, pas vos fichiers ni
+  la ligne de commande. Quelqu'un qui utilise deja votre session Windows peut supprimer `freeav.db`
+  pour la retirer ; c'est aussi la solution si vous avez perdu tous vos codes.
+
+**Voir la base avec DBeaver** (ou un autre outil SQLite) : *Base de donnees > Nouvelle connexion >
+SQLite*, chemin `C:\Users\<vous>\.freeav\freeav.db` (le dossier `.freeav` est cache), en cochant
+« lecture seule » pour ne rien modifier par erreur. Trois tables : `comptes` (pseudo, empreinte du
+mot de passe, cle OTP chiffree, essais rates, derniere connexion), `codes_secours` (empreintes, date
+d'utilisation) et `historique` (connexions reussies ou ratees et changements, sans aucun secret).
+La base n'existe qu'une fois la connexion activee.
+
 ## Utilisation
 
 ```bash
