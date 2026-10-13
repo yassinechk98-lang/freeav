@@ -105,11 +105,22 @@ def test_otp_key_unreadable_here_leaves_the_recovery_codes(path):
 
 
 def test_real_hash_parameters_are_strong():
-    assert login.SCRYPT == {"n": 2 ** 15, "r": 8, "p": 1}
+    assert login.SCRYPT == {"n": 2 ** 17, "r": 8, "p": 1}  # minimum recommande par l'OWASP
     assert login.SCRYPT_RECOVERY["n"] >= 2 ** 14
     stored = login.hash_password(PASSWORD)
     assert login.check_password(PASSWORD, stored) and not login.check_password("autre", stored)
     assert not login.check_password(PASSWORD, {**stored, "n": 2 ** 30})  # fichier trafique
+
+
+def test_old_weaker_hash_is_upgraded_at_login(path):
+    weak = {"n": 2 ** 10, "r": 4, "p": 1}  # comme une base creee par une version plus ancienne
+    account = login.Account("Yassine", login.hash_password(PASSWORD, params=weak), created="x")
+    login.save(account, path, new=True)
+    login.verify("Yassine", PASSWORD, path=path)
+    stored = login.load(path).password
+    assert {k: stored[k] for k in "nrp"} == login.SCRYPT
+    assert login.check_password(PASSWORD, stored)
+    login.verify("Yassine", PASSWORD, path=path)  # toujours le meme mot de passe
 
 
 def test_login_with_nickname_and_password(path):
@@ -199,12 +210,13 @@ def test_recovery_code_replaces_the_otp_once(path):
         login.verify("Yassine", PASSWORD, codes[0], path=path)
 
 
-def test_forgot_password_with_otp_or_single_use_recovery_code(path):
+def test_forgot_password_needs_a_single_use_recovery_code_not_the_phone(path):
     secret = login.new_otp_secret()
     codes = login.create("Yassine", PASSWORD, secret, login.totp(secret, 7000), path=path,
                          now=7000)
-    login.reset_password("Yassine", login.totp(secret, 7030), NEW_PASSWORD, path, now=7030)
-    assert login.verify("Yassine", NEW_PASSWORD, login.totp(secret, 7060), path=path, now=7060)
+    with pytest.raises(LoginError, match="code de secours"):  # le telephone seul ne suffit pas
+        login.reset_password("Yassine", login.totp(secret, 7030), NEW_PASSWORD, path, now=7030)
+    assert login.verify("Yassine", PASSWORD, login.totp(secret, 7060), path=path, now=7060)
     login.reset_password("yassine", codes[0], "nouveau-mot-de-passe-2", path)
     with pytest.raises(LoginError):  # code de secours deja utilise
         login.reset_password("Yassine", codes[0], "nouveau-mot-de-passe-3", path)

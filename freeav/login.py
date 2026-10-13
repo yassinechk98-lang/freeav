@@ -46,7 +46,7 @@ HISTORY_KEEP = 200  # evenements gardes dans la table historique
 ISSUER = "FreeAV"
 NICKNAME_RE = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
 MIN_PASSWORD, MAX_PASSWORD = 12, 128
-SCRYPT = {"n": 2 ** 15, "r": 8, "p": 1}          # mot de passe (environ 0,1 s par essai)
+SCRYPT = {"n": 2 ** 17, "r": 8, "p": 1}          # mot de passe : minimum OWASP (128 Mo)
 SCRYPT_RECOVERY = {"n": 2 ** 14, "r": 8, "p": 1}  # codes de secours (8 a verifier au pire)
 RECOVERY_CODES = 8
 RECOVERY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sans 0/O ni 1/I, faciles a recopier
@@ -146,7 +146,7 @@ def _normalize(text: str) -> bytes:
 
 
 def _scrypt(secret: bytes, salt: bytes, params: dict) -> bytes:
-    return hashlib.scrypt(secret, salt=salt, maxmem=128 * 1024 * 1024, dklen=32, **params)
+    return hashlib.scrypt(secret, salt=salt, maxmem=256 * 1024 * 1024, dklen=32, **params)
 
 
 def _hash(secret: bytes, params: dict, salt: bytes | None = None) -> dict:
@@ -191,6 +191,13 @@ def unpack_hash(text: str) -> dict:
                 "hash": digest}
     except (ValueError, KeyError, AttributeError):
         return {}  # illisible : ne correspond a rien
+
+
+def _upgrade(account: Account, password: str) -> None:
+    """Empreinte refaite avec les reglages actuels si elle date d'une version plus faible
+    (le mot de passe vient d'etre verifie : c'est le seul moment ou on l'a en clair)."""
+    if any(account.password.get(k) != v for k, v in SCRYPT.items()):
+        account.password = hash_password(password)
 
 
 def password_problem(password: str, nickname: str = "") -> str | None:
@@ -641,31 +648,36 @@ def verify(nickname: str, password: str, code: str | None = None,
         _failed(account, path, now, GENERIC_ERROR,
                 "Échec de connexion : pseudo ou mot de passe incorrect")
     if not account.otp:
+        _upgrade(account, password)
         return _succeeded(account, path, now, "Connexion réussie")
     if not code:
         raise CodeRequired()
     counter, recovery = _second_factor(account, code, now)
     if counter is None and recovery is None:
         _failed(account, path, now, CODE_ERROR, "Échec de connexion : code incorrect")
+    _upgrade(account, password)
     return _succeeded(account, path, now, "Connexion réussie", recovery, counter)
 
 
 def reset_password(nickname: str, code: str, new_password: str,
                    path: Path | None = None, now: float | None = None) -> Unlock:
-    """Mot de passe oublie : un code OTP ou un code de secours (qui est alors consomme)."""
+    """Mot de passe oublie : un code de secours, qui est alors consomme."""
     now = time.time() if now is None else now
     account = _guard(path, now)
     if problem := password_problem(new_password, nickname or account.nickname):
         raise LoginError(problem)
     ok_nickname = hmac.compare_digest(nickname.strip().lower().encode(),
                                       account.nickname.lower().encode())
-    counter, recovery = _second_factor(account, code, now)
-    if not ok_nickname or (counter is None and recovery is None):
-        _failed(account, path, now, Message("Pseudo ou code incorrect."),
+    # Seul un code de secours (note a part, a usage unique) remplace le mot de passe : avec
+    # le code OTP seul, quelqu'un qui a le telephone entrerait sans le mot de passe, et les
+    # deux etapes n'en feraient plus qu'une.
+    recovery = _find_recovery(account, code)
+    if not ok_nickname or recovery is None:
+        _failed(account, path, now, Message("Pseudo ou code de secours incorrect."),
                 "Échec de « mot de passe oublié » : pseudo ou code incorrect")
     account.password = hash_password(new_password)
     return _succeeded(account, path, now, "Mot de passe oublié : nouveau mot de passe choisi",
-                      recovery, counter)
+                      recovery)
 
 
 # -- reglages (apres une nouvelle verification du mot de passe dans l'interface) ----------

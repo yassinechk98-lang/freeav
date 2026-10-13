@@ -120,9 +120,41 @@ class System:
         return list(dict.fromkeys(dirs))
 
 
+# Outils de Windows lances par FreeAV, toujours par leur chemin complet dans System32. Avec un
+# nom nu (« sfc »), Windows cherche d'abord dans le dossier de FreeAV.exe (souvent
+# Telechargements), puis dans le dossier courant : un faux sfc.exe pose la serait lance a la
+# place du vrai, avec les droits administrateur si FreeAV en a.
+SYSTEM_TOOLS = {"powershell": r"WindowsPowerShell\v1.0\powershell.exe", "schtasks": "schtasks.exe",
+                "netsh": "netsh.exe", "sfc": "sfc.exe", "dism": "Dism.exe",
+                "ipconfig": "ipconfig.exe"}
+
+
+def _system_dir() -> Path:
+    """C:\\Windows\\System32, donne par Windows (pas par une variable d'environnement)."""
+    import ctypes
+    buf = ctypes.create_unicode_buffer(260)
+    size = ctypes.windll.kernel32.GetSystemDirectoryW(buf, len(buf))
+    if not 0 < size < len(buf):
+        raise OSError("dossier System32 introuvable")
+    return Path(buf.value)
+
+
+def resolve_tool(args: list[str], system_dir=_system_dir) -> list[str]:
+    """Remplace le nom nu d'un outil de Windows par son chemin dans System32 ; refuse tout
+    autre programme sans chemin complet."""
+    if not args or Path(args[0]).is_absolute():
+        return list(args)
+    name = Path(args[0])
+    tool = SYSTEM_TOOLS.get(name.stem.lower())
+    if tool is None or str(name) != name.name or name.suffix.lower() not in ("", ".exe"):
+        raise OSError(f"programme sans chemin complet refuse : {args[0]}")
+    return [str(system_dir() / tool), *args[1:]]
+
+
 def _run(args: list[str], timeout: float) -> subprocess.CompletedProcess:
     kwargs = {}
     if IS_WINDOWS:
+        args = resolve_tool(args)
         kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         if args and Path(args[0]).stem.lower() == "powershell":
             # Lance depuis PowerShell 7, Windows PowerShell 5 herite de modules incompatibles

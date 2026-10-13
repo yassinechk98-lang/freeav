@@ -10,7 +10,7 @@ from freeav import repair
 from freeav.cli import main
 from freeav.repair import checks
 from freeav.repair.checks import DANGER, INFO, REG_DWORD, REG_SZ, SUSPECT
-from freeav.repair.platform import RegistryError, System
+from freeav.repair.platform import RegistryError, System, resolve_tool
 
 
 class FakeRegistry:
@@ -454,3 +454,20 @@ def test_real_windows_protected_backup_folder():
     assert root2 == root
     assert not (root / "20990101-000000-dead.json").exists()
     assert list(folder.parent.glob("FreeAV.non-sur-*"))
+
+
+def test_windows_tools_always_come_from_system32():
+    """Un nom nu ferait chercher sfc.exe d'abord a cote de FreeAV.exe (Telechargements)."""
+    from pathlib import PureWindowsPath
+    system32 = PureWindowsPath(r"C:\Windows\System32")
+    for name, path in (("sfc", r"C:\Windows\System32\sfc.exe"),
+                       ("DISM", r"C:\Windows\System32\Dism.exe"),
+                       ("schtasks.exe", r"C:\Windows\System32\schtasks.exe"),
+                       ("powershell",
+                        r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")):
+        assert resolve_tool([name, "/x"], lambda: system32) == [path, "/x"]
+    full = str(Path(tempfile.gettempdir(), "clamscan.exe").resolve())
+    assert resolve_tool([full, "a"], lambda: system32) == [full, "a"]  # chemin complet : garde
+    for bad in ("cmd", "sfc.bat", r"..\sfc.exe", "outil-inconnu"):
+        with pytest.raises(OSError):
+            resolve_tool([bad], lambda: system32)

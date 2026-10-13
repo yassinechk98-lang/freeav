@@ -51,6 +51,9 @@
   seulement sur les cles de registre que FreeAV repare. Un journal douteux est refuse en entier.
   En administrateur, les sauvegardes vont dans `%ProgramData%\FreeAV`, verrouille pour les seuls
   administrateurs ; un dossier de ce nom cree par quelqu'un d'autre est mis de cote.
+- **Les outils de Windows viennent toujours de System32** : sfc, DISM, PowerShell, schtasks,
+  netsh et ipconfig sont lances par leur chemin complet, jamais cherches dans le dossier de
+  FreeAV.exe (souvent Telechargements), ou un faux `sfc.exe` aurait pu etre pose.
 - **Le nettoyage ne sort jamais du dossier temporaire** : il n'entre ni dans un lien symbolique ni
   dans une jonction Windows, et verifie le chemin reel de chaque fichier juste avant de le supprimer
   (teste avec une vraie jonction sur Windows).
@@ -70,7 +73,11 @@
   elle ne sert a rien ; seuls les codes de secours permettent alors d'entrer). Son historique note
   les connexions et les changements, jamais un mot de passe ni un code. Les comparaisons se font
   en temps constant, le message d'erreur ne dit pas si c'est le pseudo ou le mot de passe qui est
-  faux, un code OTP ne sert qu'une fois et les essais sont freines (30 secondes apres 5 erreurs,
+  faux, un code OTP ne sert qu'une fois, « Mot de passe oublie » demande un code de secours (le
+  code OTP seul ne suffit pas), la fenetre se verrouille seule apres 10 minutes sans activite, la
+  cle OTP et les codes de secours copies quittent le presse-papiers apres 1 minute (l'historique
+  du presse-papiers de Windows, Win+V, peut en garder une copie) et les essais sont freines (30
+  secondes apres 5 erreurs,
   puis le double, 15 minutes au plus). Une base illisible n'ouvre pas FreeAV sans mot de passe :
   l'ecran de connexion dit quoi faire. Le QR code est dessine par FreeAV lui-meme : la cle OTP ne
   passe par aucun service en ligne.
@@ -117,5 +124,6 @@ quelqu'un qui utilise deja votre session Windows peut la retirer en supprimant `
 
 ## Signaler une faille
 
-Ouvrez une alerte privee via l'onglet **Security > Report a vulnerability** du depot GitHub plutot
-qu'une issue publique.
+Le signalement prive de GitHub (onglet **Security**) n'est pas encore ouvert sur ce depot. En
+attendant, ouvrez un ticket intitule « Securite », sans aucun detail (les tickets sont publics) :
+un moyen prive vous sera propose pour envoyer les details.

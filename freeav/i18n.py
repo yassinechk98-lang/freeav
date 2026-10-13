@@ -313,14 +313,9 @@ EN = {
         "Recovery code used: you have {count} left. Create new ones from the \"Sign-in\" button "
         "whenever you like.",
     "Mot de passe oublié": "Forgot password",
-    "Prouvez que c'est vous avec le code à 6 chiffres de votre application d'authentification "
-    "ou avec un code de secours, puis choisissez un nouveau mot de passe.":
-        "Prove it's you with the 6-digit code from your authenticator app or with a recovery "
-        "code, then choose a new password.",
     "Prouvez que c'est vous avec l'un de vos codes de secours, puis choisissez un nouveau mot "
     "de passe.":
         "Prove it's you with one of your recovery codes, then choose a new password.",
-    "Code OTP ou de secours": "OTP or recovery code",
     "Nouveau mot de passe": "New password",
     "Confirmez le mot de passe": "Confirm the password",
     "Changer le mot de passe": "Change password",
@@ -462,7 +457,12 @@ EN = {
     "Le pseudo doit faire 3 à 32 caractères : lettres, chiffres, point, tiret ou _.":
         "The nickname must be 3 to 32 characters: letters, digits, dot, hyphen or _.",
     "La connexion n'est pas activée.": "Sign-in is not turned on.",
-    "Pseudo ou code incorrect.": "Incorrect nickname or code.",
+    "Pseudo ou code de secours incorrect.": "Incorrect nickname or recovery code.",
+    "Effacé du presse-papiers dans 1 minute.": "Cleared from the clipboard in 1 minute.",
+    "Le code de votre téléphone ne suffit pas : il est demandé en plus du mot de passe, pas à "
+    "sa place.":
+        "The code from your phone is not enough: it is asked for in addition to the password, "
+        "not instead of it.",
     "Code incorrect. Vérifiez que l'heure du téléphone est juste.":
         "Incorrect code. Check that your phone's clock is right.",
 }

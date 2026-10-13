@@ -23,6 +23,8 @@ from . import __version__, login, qrcode, updater
 from .i18n import N_, _
 
 OFFERED_SETTING = "login_offered"
+IDLE_LOCK = 10 * 60          # secondes sans clavier ni souris avant le verrouillage automatique
+CLIPBOARD_CLEAR_MS = 60_000  # la cle OTP et les codes de secours quittent le presse-papiers
 
 # Couleurs du site FreeAV (theme sombre)
 SURFACE = "#121a16"
@@ -1225,17 +1227,16 @@ class AccessWindow(Timers, tk.Toplevel):
         c = self.screen()
         account = _account()
         otp = bool(account and account.otp)
-        self.heading(c, _("Mot de passe oublié"), (
-            _("Prouvez que c'est vous avec le code à 6 chiffres de votre application "
-              "d'authentification ou avec un code de secours, puis choisissez un nouveau mot "
-              "de passe.") if otp else _("Prouvez que c'est vous avec l'un de vos codes de "
-                                         "secours, puis choisissez un nouveau mot de passe.")))
+        self.heading(c, _("Mot de passe oublié"), _(
+            "Prouvez que c'est vous avec l'un de vos codes de secours, puis choisissez un "
+            "nouveau mot de passe.") + (" " + _(
+                "Le code de votre téléphone ne suffit pas : il est demandé en plus du mot de "
+                "passe, pas à sa place.") if otp else ""))
         row = tk.Frame(c, bg=SURFACE)
         row.pack(fill="x", pady=(0, 12))
         self.f_nick = Field(row, _("Pseudo"), icon="user", width=HALF_W)
         self.f_nick.pack(side="left")
-        self.f_code = Field(row, _("Code OTP ou de secours") if otp else _("Code de secours"),
-                            icon="key", width=HALF_W, mono=True)
+        self.f_code = Field(row, _("Code de secours"), icon="key", width=HALF_W, mono=True)
         self.f_code.pack(side="right")
         self.f_new = self.field(c, _("Nouveau mot de passe"), icon="lock", secret=True, pady=(0, 8),
                                 on_change=lambda v: self.meter.update_for(v, self.f_nick.get()))
@@ -1444,7 +1445,16 @@ class AccessWindow(Timers, tk.Toplevel):
     def _copy(self, text: str, message: str):
         self.clipboard_clear()
         self.clipboard_append(text)
-        self.notice.show(message, "success")
+        self.notice.show(message + " " + _("Effacé du presse-papiers dans 1 minute."), "success")
+        owner = self.master  # la fenetre principale, qui survit a cet ecran
+
+        def wipe():
+            try:
+                if owner.clipboard_get() == text:  # rien d'autre n'a ete copie entre-temps
+                    owner.clipboard_clear()
+            except tk.TclError:
+                pass  # presse-papiers deja vide, ou FreeAV ferme
+        owner.after(CLIPBOARD_CLEAR_MS, wipe)
 
     def submit_qr(self):
         if self.busy:
@@ -1730,6 +1740,34 @@ def lock(app) -> None:
     app.destroy()
 
 
+def watch_idle(app, delay: float = IDLE_LOCK, clock=time.monotonic, every_ms: int = 15_000) -> None:
+    """Verrouille la fenetre principale apres `delay` secondes sans clavier ni souris, comme
+    l'ecran de veille de Windows (seulement si la connexion est activee)."""
+    last = [clock()]
+
+    def seen(_event=None):
+        last[0] = clock()
+
+    for seq in ("<Any-KeyPress>", "<Any-ButtonPress>", "<Motion>", "<MouseWheel>"):
+        app.bind_all(seq, seen, add="+")
+
+    def check():
+        try:
+            if not app.winfo_exists():
+                return
+            # Pas pendant un ecran modal (reglages, confidentialite) : il garde la souris
+            if (clock() - last[0] >= delay and app.state() != "withdrawn"
+                    and app.grab_current() is None and login.enabled()):
+                lock(app)  # attend la reconnexion, ou ferme FreeAV
+                seen()
+            if app.winfo_exists():
+                app.after(every_ms, check)
+        except tk.TclError:
+            pass  # FreeAV ferme pendant le verrouillage
+
+    app.after(every_ms, check)
+
+
 def refresh(app) -> None:
     """Affiche le bouton « Verrouiller » seulement si la connexion est activee."""
     if not app.winfo_exists():
@@ -1753,6 +1791,7 @@ def attach(app, offer_now: bool = True) -> None:
     app.login_btn.pack(side="right", padx=6)
     app.lock_btn = ttk.Button(app.banner, text=_("Verrouiller"), command=lambda: lock(app))
     refresh(app)
+    watch_idle(app)
     from . import privacy
     if offer_now and not privacy.needs_first_run():
         app.after(700, lambda: offer(app))
