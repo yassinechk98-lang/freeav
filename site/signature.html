@@ -30,7 +30,7 @@
   <article class="wrap legal">
     <p class="back"><a href="./">← Retour à l'accueil</a></p>
     <h1>Politique de signature du code <span class="h1-en" lang="en">(Code signing policy)</span></h1>
-    <p class="legal-meta">Comment FreeAV.exe est construit et signé · Dernière mise à jour : 12 octobre 2026</p>
+    <p class="legal-meta">Comment FreeAV.exe est construit et signé · Dernière mise à jour : 13 octobre 2026</p>
 
     <div class="legal-sum">
       <p><strong>Signature de code gratuite fournie par SignPath.io, certificat de la SignPath Foundation.</strong></p>
@@ -43,11 +43,11 @@
     <p>Le certificat appartient à la SignPath Foundation : une fois signé, FreeAV.exe affichera « SignPath Foundation » comme éditeur, dans l'avertissement de Windows comme dans les propriétés du fichier.</p>
 
     <h2>Vérifier la signature</h2>
-    <p>Faites un clic droit sur FreeAV.exe, puis Propriétés, onglet « Signatures numériques » : le signataire doit être « SignPath Foundation », et Windows doit indiquer que la signature numérique est valide. En PowerShell, <code>Get-AuthenticodeSignature .\FreeAV.exe</code> doit afficher le statut <code>Valid</code>. Tant que FreeAV.exe n'est pas signé, cet onglet n'apparaît pas : comparez alors le résultat de <code>Get-FileHash .\FreeAV.exe</code> avec l'<a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe.sha256">empreinte SHA-256 publiée</a>.</p>
+    <p>Faites un clic droit sur FreeAV.exe, puis Propriétés, onglet « Signatures numériques » : le signataire doit être « SignPath Foundation », et Windows doit indiquer que la signature numérique est valide. En PowerShell, <code>Get-AuthenticodeSignature .\FreeAV.exe</code> doit afficher le statut <code>Valid</code>. Tant que FreeAV.exe n'est pas signé, cet onglet n'apparaît pas : comparez alors le résultat de <code>Get-FileHash .\FreeAV.exe</code> avec l'<a href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe.sha256">empreinte SHA-256 publiée</a>.</p>
 
     <h2>Code source et licence</h2>
-    <p>Le code source de FreeAV est public : <a href="https://github.com/yassinechk98-lang/dev/tree/main/antivirus" target="_blank" rel="noopener noreferrer">github.com/yassinechk98-lang/dev/tree/main/antivirus</a>. FreeAV est un logiciel libre, distribué sous licence <a href="https://github.com/yassinechk98-lang/dev/blob/main/antivirus/LICENSE" target="_blank" rel="noopener noreferrer">GNU General Public License version 3 ou toute version ultérieure (GPL-3.0-or-later)</a>, publiée par la <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer">Free Software Foundation</a> : chacun peut le lire, le modifier et le redistribuer, à condition que les versions modifiées restent elles aussi libres.</p>
-    <p>Chaque version publiée est accompagnée de <a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/LICENSE.txt">LICENSE.txt</a>, le texte de la licence, et de <a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/THIRD_PARTY_NOTICES.txt">THIRD_PARTY_NOTICES.txt</a>, les licences des logiciels libres inclus dans FreeAV.exe (Python, Tcl/Tk, OpenSSL, YARA, PyInstaller…).</p>
+    <p>Le code source de FreeAV est public : <a href="https://github.com/yassinechk98-lang/freeav" target="_blank" rel="noopener noreferrer">github.com/yassinechk98-lang/freeav</a>. FreeAV est un logiciel libre, distribué sous licence <a href="https://github.com/yassinechk98-lang/freeav/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">GNU General Public License version 3 ou toute version ultérieure (GPL-3.0-or-later)</a>, publiée par la <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer">Free Software Foundation</a> : chacun peut le lire, le modifier et le redistribuer, à condition que les versions modifiées restent elles aussi libres.</p>
+    <p>Chaque version publiée est accompagnée de <a href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/LICENSE.txt">LICENSE.txt</a>, le texte de la licence, et de <a href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/THIRD_PARTY_NOTICES.txt">THIRD_PARTY_NOTICES.txt</a>, les licences des logiciels libres inclus dans FreeAV.exe (Python, Tcl/Tk, OpenSSL, YARA, PyInstaller…).</p>
 
     <h2>Équipe</h2>
     <ul>
@@ -57,7 +57,7 @@
     <p>Les modifications arrivent sur la branche main par des demandes de fusion (pull requests), relues et fusionnées par Yassine.</p>
 
     <h2>Construction</h2>
-    <p>Chaque version signée sera construite automatiquement par GitHub Actions, sur un serveur Windows hébergé par GitHub, à partir du code de la branche main. Avant la publication, les tests passent sous Windows et l'exécutable est essayé pour de vrai : il doit détecter un fichier de test et laisser passer un fichier sain. Chaque FreeAV.exe publié est aussi analysé par Microsoft Defender pendant la construction, après une mise à jour de ses signatures et un contrôle avec le fichier de test EICAR, et le résultat est écrit dans les <a href="https://github.com/yassinechk98-lang/dev/releases/tag/freeav-test" target="_blank" rel="noopener noreferrer">notes de version</a>. Ce contrôle n'est ni une validation ni une certification par Microsoft. Aucune version signée n'est construite sur un ordinateur personnel, et chaque demande de signature sera approuvée à la main. Les étapes de construction sont publiques : <a href="https://github.com/yassinechk98-lang/dev/blob/main/.github/workflows/build-windows.yml" target="_blank" rel="noopener noreferrer">build-windows.yml</a>.</p>
+    <p>Chaque version signée sera construite automatiquement par GitHub Actions, sur un serveur Windows hébergé par GitHub, à partir du code de la branche main. Avant la publication, les tests passent sous Windows et l'exécutable est essayé pour de vrai : il doit détecter un fichier de test et laisser passer un fichier sain. Chaque FreeAV.exe publié est aussi analysé par Microsoft Defender pendant la construction, après une mise à jour de ses signatures et un contrôle avec le fichier de test EICAR, et le résultat est écrit dans les <a href="https://github.com/yassinechk98-lang/freeav/releases/latest" target="_blank" rel="noopener noreferrer">notes de version</a>. Ce contrôle n'est ni une validation ni une certification par Microsoft. Aucune version signée n'est construite sur un ordinateur personnel, et chaque demande de signature sera approuvée à la main. Les étapes de construction sont publiques : <a href="https://github.com/yassinechk98-lang/freeav/blob/main/.github/workflows/build-windows.yml" target="_blank" rel="noopener noreferrer">build-windows.yml</a>.</p>
 
     <h2>Confidentialité</h2>
     <p>FreeAV n'envoie aucun fichier ni aucune donnée d'utilisation. Seule exception, le deuxième avis facultatif de Microsoft Defender : sa protection dans le cloud peut envoyer des échantillons à Microsoft, selon les réglages de Windows. FreeAV ne se connecte à Internet que pour :</p>
@@ -69,12 +69,12 @@
     <p>Tous les détails sont sur la page <a href="confidentialite.html">Confidentialité</a>.</p>
 
     <h2>Signaler un problème</h2>
-    <p>Si vous trouvez un FreeAV.exe signé qui n'a pas été construit de cette façon, ou une faille de sécurité, prévenez-nous. Le signalement privé de GitHub n'est pas encore ouvert sur le dépôt : en attendant, ouvrez un <a href="https://github.com/yassinechk98-lang/dev/issues" target="_blank" rel="noopener noreferrer">ticket sur GitHub</a> intitulé « Sécurité », sans donner de détails, car les tickets sont publics. Un moyen privé vous sera alors proposé pour envoyer les détails.</p>
+    <p>Si vous trouvez un FreeAV.exe signé qui n'a pas été construit de cette façon, ou une faille de sécurité, prévenez-nous. Le signalement privé de GitHub n'est pas encore ouvert sur le dépôt : en attendant, ouvrez un <a href="https://github.com/yassinechk98-lang/freeav/issues" target="_blank" rel="noopener noreferrer">ticket sur GitHub</a> intitulé « Sécurité », sans donner de détails, car les tickets sont publics. Un moyen privé vous sera alors proposé pour envoyer les détails.</p>
   </article>
 </main>
 
 <footer>
-  <div class="wrap">FreeAV · Logiciel libre (GPL-3.0 ou ultérieure) · <a href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a></div>
+  <div class="wrap">FreeAV · Logiciel libre (GPL-3.0 ou ultérieure) · <a href="https://github.com/yassinechk98-lang/freeav" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a></div>
 </footer>
 </body>
 </html>
