@@ -73,8 +73,9 @@
   dossier. Microsoft Defender est lance avec `-DisableRemediation` et suit ses propres reglages de
   confidentialite, deja actifs sur le PC.
 - **Mises a jour de FreeAV lui-meme** : seulement si vous les acceptez. FreeAV lit `FreeAV.json` dans
-  la pre-release GitHub de sa version (HTTPS, github.com et ses serveurs de fichiers uniquement,
-  redirections comprises), n'accepte qu'une version plus recente, pour son propre canal, et refuse le
+  la derniere release GitHub du depot yassinechk98-lang/freeav (HTTPS, github.com et ses serveurs
+  de fichiers uniquement, redirections comprises), n'accepte qu'une version plus recente, dont
+  FreeAV.exe vient de la release de ce meme numero dans ce depot, et refuse le
   fichier si son empreinte SHA-256 ou sa taille ne correspondent pas, ou si ce n'est pas un programme
   Windows. L'ancienne version est remise en place si le remplacement echoue. En administrateur,
   la protection en temps reel n'est pas relancee (elle tournerait avec ces droits sur des dossiers

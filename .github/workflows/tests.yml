@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Yassine
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["site/**"]
+  pull_request:
+    branches: [main]
+    paths-ignore: ["site/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Installe les dependances
+        run: pip install --require-hashes -r requirements-build.txt
+
+      - name: Lance les tests
+        run: pytest

@@ -1,8 +1,8 @@
 """Mise a jour de FreeAV lui-meme (FreeAV.exe sous Windows).
 
-Chaque version publiee par la CI s'accompagne d'un petit fichier FreeAV.json (numero de
-version, empreinte SHA-256 et adresse de FreeAV.exe) dans la meme pre-release GitHub que
-le telechargement direct. FreeAV le lit, propose la nouvelle version si elle est plus
+Chaque version publiee par la CI (release GitHub v0.1.<numero> du depot
+yassinechk98-lang/freeav) s'accompagne d'un petit fichier FreeAV.json (numero de version,
+empreinte SHA-256 et adresse de FreeAV.exe). FreeAV lit celui de la derniere version. FreeAV le lit, propose la nouvelle version si elle est plus
 recente, et ne remplace rien sans l'accord de l'utilisateur :
   - telechargement uniquement en HTTPS depuis github.com (et ses serveurs de fichiers) ;
   - fichier refuse si son empreinte ne correspond pas a celle annoncee, ou si ce n'est pas
@@ -31,12 +31,16 @@ from pathlib import Path
 from typing import Callable
 
 from . import __version__
-from .clamav_local import FREEAV_TEST_RELEASE
 
 BUILD_INFO = Path(__file__).parent / "data" / "build.json"  # ecrit par la CI Windows
 ALLOWED_HOSTS = {"github.com", "objects.githubusercontent.com",
                  "release-assets.githubusercontent.com"}
 CANAL_RE = re.compile(r"^freeav-[a-z]{1,16}$")
+RELEASES = "https://github.com/yassinechk98-lang/freeav/releases/"
+MANIFEST_URL = RELEASES + "latest/download/FreeAV.json"
+# FreeAV.exe d'une version precise : le numero de la release doit etre celui annonce
+EXE_URL_RE = re.compile(r"^https://github\.com/yassinechk98-lang/freeav/releases/download/"
+                        r"v0\.1\.([0-9]{1,7})/FreeAV\.exe$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 MAX_MANIFEST = 64 * 1024
 MAX_EXE = 100 * 1024 * 1024
@@ -83,20 +87,22 @@ def set_auto_check(enabled: bool) -> None:
     updater.save_setting(AUTO_CHECK_SETTING, bool(enabled), updater.CONFIG_FILE)
 
 
-def manifest_url(canal: str) -> str:
-    return f"{FREEAV_TEST_RELEASE}{canal}/FreeAV.json"
+def manifest_url(canal: str = "") -> str:
+    """Toutes les copies (y compris celles de l'ancien canal freeav-test) suivent la
+    derniere version du depot freeav."""
+    return MANIFEST_URL
 
 
-def parse_manifest(raw: bytes, canal: str) -> Release:
+def parse_manifest(raw: bytes, canal: str = "") -> Release:
     try:
         data = json.loads(raw.decode("utf-8-sig"))
     except (UnicodeDecodeError, ValueError):
         raise SelfUpdateError("fichier de version illisible") from None
-    expected_url = f"{FREEAV_TEST_RELEASE}{canal}/FreeAV.exe"
-    if not (isinstance(data, dict) and isinstance(data.get("build"), int)
+    url = EXE_URL_RE.match(str(data.get("url", ""))) if isinstance(data, dict) else None
+    if not (url and isinstance(data.get("build"), int)
             and isinstance(data.get("size"), int) and 0 < data["size"] <= MAX_EXE
             and SHA256_RE.match(str(data.get("sha256", "")))
-            and data.get("url") == expected_url):
+            and int(url.group(1)) == data["build"]):
         raise SelfUpdateError("fichier de version invalide : mise a jour refusee")
     return Release(data["build"], data["sha256"], data["size"], data["url"],
                    str(data.get("commit", ""))[:40])

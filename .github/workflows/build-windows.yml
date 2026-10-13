@@ -1,0 +1,325 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Yassine
+
+name: FreeAV pour Windows
+
+# Construit FreeAV.exe sur une vraie machine Windows et le verifie.
+# - Seul un push sur main publie, dans une nouvelle release v0.1.<numero> qui devient la
+#   derniere version (lien qui ne change jamais : releases/latest/download/FreeAV.exe), et
+#   seulement si Microsoft Defender ne signale rien dans FreeAV.exe. Les anciennes versions
+#   restent publiees ;
+# - les pull requests et les lancements manuels ne publient rien : l'exe reste un artefact
+#   de la construction (onglet Actions), pour validation.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["site/**"]
+  pull_request:
+    branches: [main]
+    paths-ignore: ["site/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  # Une publication en cours sur main n'est jamais interrompue
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  CLAMAV_VERSION: "1.4.3"
+  # Empreinte du paquet Windows officiel de Cisco Talos (clamav-1.4.3.win.x64.zip)
+  CLAMAV_SHA256: "5c86a6ed17e45e5c14c9c7c7b58cfaabcdee55a195991439bb6b6c6618827e6c"
+  CANAL: freeav-stable
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      build: ${{ steps.numero.outputs.build }}
+    steps:
+      # Numero de version : celui de la construction + 1000, pour rester au-dessus des
+      # versions de test publiees depuis l'ancien depot (jusqu'a ~40)
+      - name: Calcule le numero de version
+        id: numero
+        shell: pwsh
+        run: |
+          $build = [int]$env:GITHUB_RUN_NUMBER + 1000
+          "BUILD=$build" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "build=$build" | Out-File -Append -Encoding utf8 $env:GITHUB_OUTPUT
+          Write-Host "FreeAV 0.1.$build"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Installe les outils (versions et empreintes figees)
+        run: pip install --require-hashes -r requirements-build.txt
+
+      - name: Recupere ClamAV officiel (Cisco Talos) et verifie son empreinte
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $name = "clamav-$env:CLAMAV_VERSION.win.x64.zip"
+          $release = Invoke-RestMethod -Headers @{ Authorization = "Bearer $env:GH_TOKEN" } `
+            "https://api.github.com/repos/Cisco-Talos/clamav/releases/tags/clamav-$env:CLAMAV_VERSION"
+          $asset = $release.assets | Where-Object { $_.name -eq $name }
+          if (-not $asset) { Write-Host "::error title=ClamAV::$name introuvable dans la release officielle"; exit 1 }
+          # FreeAV ne republie pas ClamAV : FreeAV.exe le telechargera a cette adresse officielle
+          $url = "https://github.com/Cisco-Talos/clamav/releases/download/clamav-$env:CLAMAV_VERSION/$name"
+          if ($asset.browser_download_url -ne $url) { Write-Host "::error title=ClamAV::adresse inattendue : $($asset.browser_download_url)"; exit 1 }
+          $zip = Join-Path $env:RUNNER_TEMP $name
+          Invoke-WebRequest $url -OutFile $zip
+          $sha = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          if ($sha -ne $env:CLAMAV_SHA256) { Write-Host "::error title=ClamAV::empreinte $sha differente de celle attendue"; exit 1 }
+          if ($asset.digest -and $asset.digest -ne "sha256:$sha") { Write-Host "::error title=ClamAV::empreinte differente de celle publiee par GitHub"; exit 1 }
+          @{ version = $env:CLAMAV_VERSION; url = $url; sha256 = $sha } | ConvertTo-Json |
+            Set-Content -Encoding utf8NoBOM freeav/data/clamav.json
+          "FREEAV_CLAMAV_ZIP=$zip" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "ClamAV $env:CLAMAV_VERSION : $sha"
+
+      - name: Lance les tests sous Windows
+        run: pytest -rA --junitxml=resultats-tests.xml --basetemp "$env:RUNNER_TEMP\freeav-tests"
+
+      - name: Signale les tests en echec
+        if: failure()
+        shell: python
+        run: |
+          import xml.etree.ElementTree as ET
+          for case in ET.parse("resultats-tests.xml").iter("testcase"):
+              for bad in list(case.findall("failure")) + list(case.findall("error")):
+                  text = (bad.get("message") or "") + " | " + (bad.text or "")[-1500:]
+                  text = text.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+                  print(f"::error title={case.get('name')}::{text}")
+
+      - name: Cree l'icone
+        run: python packaging/make_icon.py freeav/data/freeav.ico
+
+      - name: Inscrit le numero de version
+        shell: pwsh
+        run: |
+          @{ build = [int]$env:BUILD; canal = $env:CANAL; commit = $env:GITHUB_SHA } |
+            ConvertTo-Json | Set-Content -Encoding utf8NoBOM freeav/data/build.json
+          Get-Content freeav/data/build.json
+          python packaging/make_version_info.py $env:BUILD packaging/version_info.txt
+
+      - name: Construit FreeAV.exe
+        run: >
+          pyinstaller --noconfirm --onefile --windowed --name FreeAV
+          --icon freeav/data/freeav.ico --version-file packaging/version_info.txt --paths .
+          --add-data "freeav/data;freeav/data"
+          --add-data "LICENSE;." --add-data "THIRD_PARTY_NOTICES.txt;."
+          --exclude-module bz2 --exclude-module lzma
+          packaging/freeav_app.py
+
+      - name: Fait analyser FreeAV.exe par Microsoft Defender
+        id: defender
+        shell: pwsh
+        run: |
+          # Defender du serveur, avec ses signatures a jour, analyse l'exe construit. On verifie
+          # d'abord sur le fichier de test EICAR qu'il detecte vraiment, sinon le verdict ne vaut rien.
+          $mp = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform\*\MpCmdRun.exe" -ErrorAction SilentlyContinue |
+            Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $mp) { $mp = "$env:ProgramFiles\Windows Defender\MpCmdRun.exe" }
+          & $mp -SignatureUpdate | Out-Null
+          $signatures = try { (Get-MpComputerStatus).AntivirusSignatureVersion } catch { "inconnues" }
+          $eicar = Join-Path $env:RUNNER_TEMP "essai-defender.com"
+          $texte = 'X5O!P%@AP[4\PZX54(P^)7CC)7}$' + 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
+          try { [IO.File]::WriteAllText($eicar, $texte) } catch { }
+          Start-Sleep -Seconds 2
+          $detecte = -not (Test-Path $eicar)
+          if (-not $detecte) { & $mp -Scan -ScanType 3 -File $eicar -DisableRemediation | Out-Null; $detecte = $LASTEXITCODE -eq 2 }
+          Remove-Item $eicar -ErrorAction SilentlyContinue
+          $exe = (Resolve-Path dist/FreeAV.exe).Path
+          $sortie = & $mp -Scan -ScanType 3 -File $exe -DisableRemediation
+          $code = $LASTEXITCODE
+          $sortie | Write-Host
+          if (-not $detecte) {
+            $verdict = "Microsoft Defender : non verifie (Defender inactif sur le serveur de construction)"
+            Write-Host "::warning title=Microsoft Defender::Defender ne detecte pas EICAR ici, verdict non fiable"
+          } elseif ($code -eq 0) {
+            $verdict = "Microsoft Defender (signatures $signatures) : aucune menace detectee dans FreeAV.exe"
+          } else {
+            $menace = ($sortie | Select-String -Pattern 'Threat\s*:\s*(.+)$' | Select-Object -First 1).Matches.Groups[1].Value
+            $verdict = "Microsoft Defender (signatures $signatures) : FreeAV.exe signale ($menace, code $code)"
+            Write-Host "::warning title=Microsoft Defender::$verdict"
+            "signale=oui" | Out-File -Append -Encoding utf8 $env:GITHUB_OUTPUT
+          }
+          Write-Host $verdict
+          "### $verdict" | Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Set-Content -Encoding utf8NoBOM dist/defender.txt $verdict
+          $global:LASTEXITCODE = 0  # un signalement bloque la publication, a la fin de la construction
+
+      - name: Verifie FreeAV.exe (detection et fichier sain)
+        shell: pwsh
+        run: |
+          $infos = (Get-Item dist/FreeAV.exe).VersionInfo
+          Write-Host "Version Windows : $($infos.ProductName) $($infos.ProductVersion) - $($infos.CompanyName)"
+          if ($infos.ProductName -ne "FreeAV") { Write-Host "::error title=FreeAV.exe::ressource de version absente"; exit 1 }
+          if ($infos.FileVersion -ne "0.1.0.$env:BUILD") { Write-Host "::error title=FreeAV.exe::version de fichier inattendue : $($infos.FileVersion)"; exit 1 }
+          New-Item -ItemType Directory -Force essai | Out-Null
+          Set-Content -NoNewline essai/sain.txt "bonjour"
+          $echantillon = Join-Path (Resolve-Path essai) "echantillon.txt"
+          [IO.File]::WriteAllText($echantillon, "echantillon de test FreeAV $(Get-Random)")
+          if (-not (Test-Path $echantillon)) { Write-Host "::error title=FreeAV.exe::le fichier de test a ete supprime (antivirus du serveur ?)"; exit 1 }
+          $hash = (Get-FileHash $echantillon -Algorithm SHA256).Hash.ToLower()
+          Set-Content base.txt "sha256:${hash}:Test.FreeAV"
+          function Lance-FreeAV {
+            $p = Start-Process dist/FreeAV.exe -ArgumentList "scan", "essai", "--db", "base.txt" `
+              -Wait -PassThru -RedirectStandardOutput sortie.txt -RedirectStandardError erreurs.txt
+            Get-Content sortie.txt, erreurs.txt
+            Write-Host "code de sortie : $($p.ExitCode)"
+            return $p.ExitCode
+          }
+          function Echec($message) {
+            $sortie = ((Get-Content sortie.txt, erreurs.txt -Raw -ErrorAction SilentlyContinue) -join "`n") -replace "`r", "" -replace "`n", "%0A"
+            Write-Host "::error title=FreeAV.exe::$message%0A$sortie"
+            exit 1
+          }
+          $code = Lance-FreeAV
+          if ($code[-1] -ne 1) { Echec "detection attendue (code 1), obtenu $($code[-1])" }
+          Remove-Item $echantillon
+          $code = Lance-FreeAV
+          if ($code[-1] -ne 0) { Echec "aucune menace attendue (code 0), obtenu $($code[-1])" }
+          function Lance($arguments) {
+            $p = Start-Process dist/FreeAV.exe -ArgumentList $arguments -Wait -PassThru `
+              -RedirectStandardOutput sortie.txt -RedirectStandardError erreurs.txt
+            Get-Content sortie.txt, erreurs.txt | Write-Host
+            return $p.ExitCode
+          }
+          # Protection automatique : installation reelle, verification, puis retrait
+          if ((Lance @("schedule", "--at", "03:00")) -ne 0) { Echec "installation de la protection automatique" }
+          schtasks /query /tn "FreeAV\Analyse quotidienne" | Out-Null
+          if ($LASTEXITCODE -ne 0) { Echec "tache planifiee absente" }
+          $run = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run").FreeAV
+          if ($run -notlike "*\FreeAV\FreeAV.exe*watch --quarantine --notify") { Echec "entree de demarrage incorrecte : $run" }
+          if (-not (Test-Path "$env:LOCALAPPDATA\FreeAV\FreeAV.exe")) { Echec "FreeAV.exe non copie" }
+          if ((Lance @("schedule", "--remove")) -ne 0) { Echec "retrait de la protection automatique" }
+          schtasks /query /tn "FreeAV\Analyse quotidienne" 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) { Echec "tache planifiee toujours presente" }
+          if ((Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run").FreeAV) { Echec "entree de demarrage toujours presente" }
+          # Installation pour l'utilisateur, puis desinstallation complete
+          if ((Lance @("install", "--quiet")) -ne 0) { Echec "installation de FreeAV" }
+          $installe = "$env:LOCALAPPDATA\FreeAV\FreeAV.exe"
+          if (-not (Test-Path $installe)) { Echec "FreeAV.exe non installe" }
+          $desinstall = Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\FreeAV"
+          if ($desinstall.DisplayName -ne "FreeAV - antivirus gratuit") { Echec "absent de Parametres > Applications" }
+          $menu = (Get-ItemProperty -LiteralPath "HKCU:\Software\Classes\*\shell\FreeAV\command")."(default)"
+          if ($menu -notlike "*FreeAV.exe*gui --scan*%1*") { Echec "clic droit incorrect : $menu" }
+          $raccourci = Join-Path ([Environment]::GetFolderPath('Programs')) "FreeAV.lnk"
+          if (-not (Test-Path $raccourci)) { Echec "raccourci du menu Demarrer absent" }
+          # Mise a jour de FreeAV : la copie installee se remplace et relance la protection
+          if ((Lance @("schedule", "--at", "03:00")) -ne 0) { Echec "installation de la protection automatique" }
+          $nouveau = (Get-FileHash dist/FreeAV.exe -Algorithm SHA256).Hash.ToLower()
+          $p = Start-Process $installe -PassThru -ArgumentList "app-update", "--from-file", (Resolve-Path dist/FreeAV.exe), "--sha256", $nouveau, "--build", "999999" `
+            -RedirectStandardOutput sortie.txt -RedirectStandardError erreurs.txt
+          $p.WaitForExit()
+          Get-Content sortie.txt, erreurs.txt | Write-Host
+          if ($p.ExitCode -ne 0) { Echec "mise a jour de FreeAV, code $($p.ExitCode)" }
+          if ((Get-FileHash $installe -Algorithm SHA256).Hash.ToLower() -ne $nouveau) { Echec "FreeAV.exe installe non remplace" }
+          if ((Get-Content sortie.txt -Raw) -like "*prochaine ouverture de session*") {
+            # Le serveur de la CI est administrateur : FreeAV ne relance pas la protection avec ces droits
+            Write-Host "protection : relance laissee a la prochaine session (administrateur)"
+          } else {
+            Start-Sleep -Seconds 8
+            $veille = Get-CimInstance Win32_Process -Filter "Name='FreeAV.exe'" | Where-Object { $_.CommandLine -like "*watch --quarantine*" }
+            if (-not $veille) { Echec "protection en temps reel non relancee apres la mise a jour" }
+          }
+          if ((Lance @("schedule", "--remove")) -ne 0) { Echec "retrait de la protection automatique" }
+          # Desinstallation par la copie installee (comme depuis Parametres > Applications) :
+          # FreeAV.exe doit s'effacer lui-meme juste apres
+          $p = Start-Process $installe -ArgumentList "uninstall", "--yes" -Wait -PassThru `
+            -RedirectStandardOutput sortie.txt -RedirectStandardError erreurs.txt
+          Get-Content sortie.txt, erreurs.txt | Write-Host
+          if ($p.ExitCode -ne 0) { Echec "desinstallation de FreeAV" }
+          for ($i = 0; $i -lt 30 -and (Test-Path (Split-Path $installe)); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path (Split-Path $installe)) { Get-ChildItem -Recurse (Split-Path $installe) | Write-Host; Echec "dossier de FreeAV toujours present apres la desinstallation" }
+          if (Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\FreeAV") { Echec "toujours dans Parametres > Applications" }
+          if (Test-Path -LiteralPath "HKCU:\Software\Classes\*\shell\FreeAV") { Echec "clic droit toujours present" }
+          if (Test-Path $raccourci) { Echec "raccourci toujours present" }
+          if (Test-Path $installe) { Echec "FreeAV.exe toujours installe" }
+          # Entretien automatique : doit s'executer jusqu'au bout et ecrire son journal
+          $code = Lance @("auto")
+          if ($code -gt 1) { Echec "entretien automatique, code $code" }
+          if (-not (Test-Path "$HOME\.freeav\logs\auto.log")) { Echec "journal de l'entretien absent" }
+          $global:LASTEXITCODE = 0
+          (Get-FileHash dist/FreeAV.exe -Algorithm SHA256).Hash.ToLower() + "  FreeAV.exe" | Set-Content dist/FreeAV.exe.sha256
+          Copy-Item LICENSE dist/LICENSE.txt
+          Copy-Item THIRD_PARTY_NOTICES.txt dist/THIRD_PARTY_NOTICES.txt
+          # Fichier de version lu par FreeAV pour proposer ses mises a jour
+          @{ build = [int]$env:BUILD; commit = $env:GITHUB_SHA
+             sha256 = (Get-FileHash dist/FreeAV.exe -Algorithm SHA256).Hash.ToLower()
+             size = (Get-Item dist/FreeAV.exe).Length
+             url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v0.1.$env:BUILD/FreeAV.exe" } |
+            ConvertTo-Json | Set-Content -Encoding utf8NoBOM dist/FreeAV.json
+
+      - name: Verifie les mentions des licences tierces
+        run: python packaging/check_notices.py dist/FreeAV.exe THIRD_PARTY_NOTICES.txt
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: FreeAV-windows
+          path: |
+            dist/LICENSE.txt
+            dist/THIRD_PARTY_NOTICES.txt
+            dist/FreeAV.exe
+            dist/FreeAV.exe.sha256
+            dist/FreeAV.json
+            dist/defender.txt
+
+      # L'exe reste dans les artefacts (pour un signalement de faux positif a Microsoft),
+      # mais il n'est pas publie.
+      - name: Bloque la publication si Microsoft Defender signale FreeAV.exe
+        if: steps.defender.outputs.signale == 'oui'
+        shell: pwsh
+        run: |
+          Write-Host "::error title=Microsoft Defender::FreeAV.exe signale par Defender : publication bloquee ($(Get-Content dist/defender.txt))"
+          exit 1
+
+  publish:
+    needs: build
+    # Seul main publie (comme l'annonce la politique de signature du code) ; un lancement manuel
+    # ou une autre branche s'arrete aux artefacts.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: FreeAV-windows
+
+      - name: Publie la version v0.1.${{ needs.build.outputs.build }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: v0.1.${{ needs.build.outputs.build }}
+        run: |
+          # Chaque version garde sa release ; la plus recente devient la "derniere version"
+          URL="https://github.com/${GH_REPO}/releases/latest/download/FreeAV.exe"
+          TITLE="FreeAV 0.1.${{ needs.build.outputs.build }}"
+          {
+            echo "Construit automatiquement depuis la branche main (commit ${{ github.sha }})."
+            echo
+            echo "Telechargement direct (toujours la derniere version) : ${URL}"
+            echo
+            echo "$(cat defender.txt 2>/dev/null || echo 'Microsoft Defender : pas de verdict')"
+            echo
+            echo "Le fichier n'est pas signe : Windows SmartScreen peut afficher « Windows a protege votre ordinateur »."
+            echo "Cliquez sur « Informations complementaires » puis « Executer quand meme »."
+            echo "Empreinte SHA-256 : $(cut -d' ' -f1 FreeAV.exe.sha256)"
+            echo
+            echo "FreeAV est un logiciel libre (GPL-3.0-or-later, voir LICENSE.txt). Code source de cette version : https://github.com/${GH_REPO}/tree/${{ github.sha }}"
+            echo "Licences des logiciels tiers inclus dans FreeAV.exe : THIRD_PARTY_NOTICES.txt"
+            echo "Code signing policy / Politique de signature du code : https://freeav-antivirus-gratuit.netlify.app/signature.html"
+            echo
+            echo "ClamAV n'est pas fourni ici : « Installer ClamAV » telecharge ClamAV ${CLAMAV_VERSION} directement depuis la release officielle de Cisco Talos (GPL-2.0, code source : https://github.com/Cisco-Talos/clamav/releases/tag/clamav-${CLAMAV_VERSION}), sans son module RAR non libre."
+          } > notes.md
+          gh release create "$TAG" FreeAV.exe FreeAV.exe.sha256 FreeAV.json LICENSE.txt THIRD_PARTY_NOTICES.txt \
+            --latest --target "${{ github.sha }}" \
+            --title "$TITLE" --notes-file notes.md

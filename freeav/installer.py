@@ -173,7 +173,7 @@ def install(system: System, source: Path | None = None) -> list[str]:
               "UninstallString": (subprocess.list2cmdline([str(exe), "uninstall"]), REG_SZ),
               "QuietUninstallString": (subprocess.list2cmdline([str(exe), "uninstall", "--yes"]),
                                        REG_SZ),
-              "URLInfoAbout": ("https://github.com/yassinechk98-lang/dev", REG_SZ),
+              "URLInfoAbout": ("https://github.com/yassinechk98-lang/freeav", REG_SZ),
               "NoModify": (1, REG_DWORD), "NoRepair": (1, REG_DWORD),
               "EstimatedSize": (size_kb, REG_DWORD)}
     for name, (value, kind) in values.items():

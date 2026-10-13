@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Construction de FreeAV.exe (generee par la CI)
+dist/
+build/
+*.spec
+freeav/data/freeav.ico
+freeav/data/clamav.json
+freeav/data/build.json
+packaging/version_info.txt
+
+# Outils locaux
+.claude/
+.vscode/
+.netlify/

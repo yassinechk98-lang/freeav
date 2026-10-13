@@ -1,5 +1,11 @@
 # FreeAV : prototype d'antivirus gratuit
 
+**Telecharger FreeAV pour Windows** (toujours la derniere version) :
+https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe
+(empreinte SHA-256 et notes de chaque version dans l'onglet
+[Releases](https://github.com/yassinechk98-lang/freeav/releases)). Site :
+https://freeav-antivirus-gratuit.netlify.app
+
 Scanner de fichiers en Python. Il fonctionne avec la seule bibliotheque standard ; le moteur YARA
 est optionnel (`pip install -r requirements-optional.txt`). Python 3.10 ou plus recent.
 FreeAV.exe contient le moteur YARA (yara-python, version figee dans `requirements-build.txt`).
@@ -98,8 +104,6 @@ ce qui est necessaire pour les reglages communs a tout le PC (HKLM, hosts, Defen
 ## Utilisation
 
 ```bash
-cd antivirus
-
 # Analyser un dossier (code de sortie 1 si une menace est trouvee)
 python -m freeav scan ~/Downloads
 
@@ -173,9 +177,11 @@ FreeAV est distribue dans l'espoir qu'il sera utile, mais SANS AUCUNE GARANTIE ;
 garantie implicite de QUALITE MARCHANDE ou d'ADEQUATION A UN USAGE PARTICULIER. Voir la GNU General
 Public License pour plus de details : texte complet dans [LICENSE](LICENSE).
 
-Cette licence couvre le dossier `antivirus/` et les scripts qui construisent et testent FreeAV
-(`.github/workflows/build-windows.yml` et `.github/workflows/antivirus-tests.yml`). Elle ne couvre
-pas les autres projets du depot.
+Cette licence couvre tout ce depot, y compris les scripts qui construisent et testent FreeAV
+(dossier `.github/workflows/`), sauf le site de presentation (dossier `site/`).
+
+FreeAV a ete developpe jusqu'en octobre 2026 dans le dossier `antivirus/` du depot
+[yassinechk98-lang/dev](https://github.com/yassinechk98-lang/dev) ; son historique est repris ici.
 
 ClamAV, que FreeAV peut installer a votre demande, est un programme separe de Cisco Talos sous sa
 propre licence (GPLv2) : https://github.com/Cisco-Talos/clamav. FreeAV ne le redistribue pas : il le

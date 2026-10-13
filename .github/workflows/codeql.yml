@@ -1,0 +1,30 @@
+name: Analyse de securite CodeQL
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["site/**"]
+  pull_request:
+    branches: [main]
+    paths-ignore: ["site/**"]
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: github/codeql-action/init@9f759ee644a3e7c15c1390abf49868036c00067b # v3.38.3
+        with:
+          languages: python
+          queries: security-extended
+          config: |
+            paths-ignore: [site]
+
+      - uses: github/codeql-action/analyze@9f759ee644a3e7c15c1390abf49868036c00067b # v3.38.3

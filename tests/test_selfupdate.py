@@ -13,7 +13,7 @@ from freeav.selfupdate import Release, SelfUpdateError
 from test_engines import windows_system
 
 WINDOWS = sys.platform.startswith("win")
-EXE_URL = selfupdate.FREEAV_TEST_RELEASE + "freeav-test/FreeAV.exe"
+EXE_URL = selfupdate.RELEASES + "download/v0.1.12/FreeAV.exe"
 NEW = b"MZ nouvelle version de FreeAV"
 
 
@@ -31,7 +31,7 @@ def test_newer_version_is_offered_only_when_more_recent():
         seen.append(url)
         return manifest()
     assert selfupdate.check(fetcher, {"build": 11, "canal": "freeav-test"}).build == 12
-    assert seen == [selfupdate.FREEAV_TEST_RELEASE + "freeav-test/FreeAV.json"]
+    assert seen == ["https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.json"]
     assert selfupdate.check(fetcher, {"build": 12, "canal": "freeav-test"}) is None
     assert selfupdate.check(fetcher, {"build": 30, "canal": "freeav-test"}) is None  # pas de retour arriere
 
@@ -43,7 +43,10 @@ def test_source_copy_never_updates_itself():
 
 @pytest.mark.parametrize("bad", [
     {"url": "https://evil.example/FreeAV.exe"},
-    {"url": selfupdate.FREEAV_TEST_RELEASE + "freeav-apercu/FreeAV.exe"},  # autre canal
+    {"url": "https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe"},
+    {"url": selfupdate.RELEASES + "download/v0.1.11/FreeAV.exe"},  # pas la version annoncee
+    {"url": selfupdate.RELEASES + "download/v0.1.12/FreeAV.exe.zip"},
+    {"url": "https://github.com/evil/freeav/releases/download/v0.1.12/FreeAV.exe"},
     {"sha256": "1234"},
     {"size": 10 ** 9},
     {"build": "13"},
