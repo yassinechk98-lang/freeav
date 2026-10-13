@@ -46,8 +46,8 @@
       <h1>Protégez votre ordinateur,<br><span class="grad">sans payer un centime.</span></h1>
       <p class="lead">FreeAV détecte les malwares connus grâce à leurs signatures et au moteur ClamAV, analyse en un clic les endroits à risque, surveille vos téléchargements et vos clés USB en temps réel, et vous aide à réparer les problèmes qu'ils laissent sur votre PC. Pas de publicité, pas d'abonnement, pas de collecte de données.</p>
       <div class="ctas">
-        <a class="btn btn-primary shine dl-link" href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger pour Windows</a>
-        <a class="btn btn-ghost" href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">Voir le code source</a>
+        <a class="btn btn-primary shine dl-link" href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger pour Windows</a>
+        <a class="btn btn-ghost" href="https://github.com/yassinechk98-lang/freeav" target="_blank" rel="noopener noreferrer">Voir le code source</a>
       </div>
       <p class="note">Version de test · FreeAV.exe · 14 Mo · <a href="#avertissement">Aide si Windows bloque le fichier</a></p>
       <div class="scan-demo" id="scanDemo" role="img" aria-label="Démonstration animée : FreeAV analyse des fichiers, trouve un fichier de test EICAR et le met en quarantaine.">
@@ -130,6 +130,10 @@
           <li class="reveal">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
             <div><strong>Analyse rapide en un clic</strong><span>Téléchargements, Bureau, dossiers Public, dossier temporaire de votre session, dossiers Démarrage et programmes lancés à l'ouverture de session : là où les malwares arrivent le plus souvent. L'ancien bouton s'appelle maintenant « Analyser ce dossier ».</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></div>
+            <div><strong>Pièges repérés même sans signature</strong><span>Pendant une analyse, FreeAV signale aussi des pièges courants que les signatures ne connaissent pas encore : une fausse double extension comme « facture.pdf.exe », un raccourci qui lance PowerShell en caché et, seulement s'ils viennent d'Internet, un script Windows (.js, .vbs, .hta…) qui télécharge et lance autre chose ou un document Office dont la macro se lance seule à l'ouverture. Ces fichiers sont marqués « suspects » : FreeAV ne les met jamais en quarantaine tout seul, c'est vous qui choisissez.</span></div>
           </li>
           <li class="reveal">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M12 8v6"/><path d="M9 11h6"/></svg></div>
@@ -299,10 +303,10 @@
         <h2>Télécharger FreeAV</h2>
         <p class="sub flush">Gratuit, sans inscription. Double-cliquez sur le fichier téléchargé pour ouvrir FreeAV.</p>
         <div class="platforms"><span>Windows</span><span>FreeAV.exe · 14 Mo</span><span class="tag-test">Version de test</span></div>
-        <a class="btn btn-primary btn-big shine dl-link" href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger FreeAV pour Windows</a>
+        <a class="btn btn-primary btn-big shine dl-link" href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger FreeAV pour Windows</a>
         <p class="update-note"><strong>Vous aviez déjà FreeAV ?</strong> Mettez-le à jour avant d'installer ClamAV : les versions d'avant le 12 octobre 2026 ne trouvent plus ClamAV. Cliquez sur « Mettre à jour FreeAV ». Si votre copie date d'avant le 11 octobre 2026, elle n'a pas ce bouton : téléchargez-la encore une fois ici. Ensuite, c'est FreeAV qui vous proposera chaque nouvelle version.</p>
-        <p class="defender-note"><strong>Analysé par Microsoft Defender.</strong> Chaque FreeAV.exe publié est analysé par Microsoft Defender pendant sa construction, avec des signatures à jour et un contrôle sur le fichier de test EICAR. Le résultat est écrit dans les <a href="https://github.com/yassinechk98-lang/dev/releases/tag/freeav-test" target="_blank" rel="noopener noreferrer">notes de version</a> : au 12 octobre 2026, aucune menace détectée (signatures 1.459.688.0). Ce contrôle n'est ni une validation ni une certification par Microsoft.</p>
-        <p class="dl-links"><a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe.sha256">Empreinte SHA-256</a> · <a href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">Code source sur GitHub</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a> · <a href="https://github.com/yassinechk98-lang/dev/blob/main/antivirus/LICENSE" target="_blank" rel="noopener noreferrer">Licence GPL-3.0 ou ultérieure</a> · macOS et Linux : depuis le code source</p>
+        <p class="defender-note"><strong>Analysé par Microsoft Defender.</strong> Chaque FreeAV.exe publié est analysé par Microsoft Defender pendant sa construction, avec des signatures à jour et un contrôle sur le fichier de test EICAR. Le résultat est écrit dans les <a href="https://github.com/yassinechk98-lang/freeav/releases/latest" target="_blank" rel="noopener noreferrer">notes de version</a> : pour la version 0.1.1003 du 13 octobre 2026, aucune menace détectée (signatures 1.459.691.0). Ce contrôle n'est ni une validation ni une certification par Microsoft.</p>
+        <p class="dl-links"><a href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe.sha256">Empreinte SHA-256</a> · <a href="https://github.com/yassinechk98-lang/freeav" target="_blank" rel="noopener noreferrer">Code source sur GitHub</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a> · <a href="https://github.com/yassinechk98-lang/freeav/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Licence GPL-3.0 ou ultérieure</a> · macOS et Linux : depuis le code source</p>
 
         <div class="smartscreen" id="avertissement">
           <div class="ss-mock" aria-hidden="true">
@@ -337,13 +341,13 @@
       <details class="reveal"><summary>Comment mettre à jour FreeAV ?</summary><p>FreeAV vous prévient à son ouverture quand une nouvelle version existe, et l'analyse quotidienne aussi. Cliquez sur « Mettre à jour FreeAV » : il la télécharge, vérifie son empreinte, remplace l'ancienne version et redémarre. Rien ne change sans votre accord. Si vous avez téléchargé FreeAV avant le 11 octobre 2026, téléchargez-le une fois de plus <a href="#telecharger">depuis cette page</a> : cette version-là ne sait pas encore se mettre à jour. Une version d'avant le 12 octobre 2026 doit être mise à jour avant que « Installer ClamAV » fonctionne.</p></details>
       <details class="reveal"><summary>Comment désinstaller FreeAV ?</summary><p>Si vous l'avez installé avec « Installer FreeAV sur ce PC », désinstallez-le depuis Paramètres &gt; Applications, comme n'importe quel logiciel : sa protection automatique est retirée aussi. Sinon, cliquez sur « Tout retirer » dans FreeAV, puis supprimez FreeAV.exe et, si vous aviez installé ClamAV, le dossier %LOCALAPPDATA%\FreeAV. Votre quarantaine et votre journal restent dans le dossier .freeav de votre profil.</p></details>
       <details class="reveal"><summary>« Réparer mon PC » peut-il abîmer mon ordinateur ?</summary><p>Le diagnostic ne modifie rien. Ensuite, FreeAV ne répare que ce que vous choisissez et sauvegarde chaque modification pour pouvoir l'annuler. Le nettoyage des fichiers temporaires et les outils Windows ne s'annulent pas : c'est indiqué avant de les lancer. La fonction est encore en test, gardez une sauvegarde de vos fichiers importants.</p></details>
-      <details class="reveal"><summary>Pourquoi Windows affiche-t-il un avertissement ?</summary><p>FreeAV n'est pas encore signé numériquement, et Windows SmartScreen se méfie des applications qu'il ne connaît pas encore. Cliquez sur « Informations complémentaires » puis sur « Exécuter quand même ». Pour vérifier que votre fichier est bien l'original, comparez-le avec l'<a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe.sha256">empreinte SHA-256</a> publiée.</p></details>
+      <details class="reveal"><summary>Pourquoi Windows affiche-t-il un avertissement ?</summary><p>FreeAV n'est pas encore signé numériquement, et Windows SmartScreen se méfie des applications qu'il ne connaît pas encore. Cliquez sur « Informations complémentaires » puis sur « Exécuter quand même ». Pour vérifier que votre fichier est bien l'original, comparez-le avec l'<a href="https://github.com/yassinechk98-lang/freeav/releases/latest/download/FreeAV.exe.sha256">empreinte SHA-256</a> publiée.</p></details>
     </div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap">FreeAV · Logiciel libre (GPL-3.0 ou ultérieure) · <a href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a></div>
+  <div class="wrap">FreeAV · Logiciel libre (GPL-3.0 ou ultérieure) · <a href="https://github.com/yassinechk98-lang/freeav" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a></div>
 </footer>
 
 <div class="toast" id="dlToast" role="status" aria-live="polite"></div>
