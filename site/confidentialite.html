@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Confidentialité – FreeAV</title>
-<meta name="description" content="Politique de confidentialité de FreeAV : pas de compte, pas de télémétrie, aucun fichier envoyé. La liste exacte des connexions Internet de FreeAV et la façon de supprimer vos données.">
+<meta name="description" content="Politique de confidentialité de FreeAV : pas de compte en ligne, pas de télémétrie, aucun fichier envoyé. La liste exacte des connexions Internet de FreeAV et la façon de supprimer vos données.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z' fill='%2316a34a'/><path d='m11 16 4 4 7-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -33,12 +33,12 @@
     <p class="legal-meta">Politique de confidentialité de l'application FreeAV et de ce site · Dernière mise à jour : 13 octobre 2026</p>
 
     <div class="legal-sum">
-      <p><strong>En bref.</strong> FreeAV n'a ni compte, ni publicité, ni mesure d'audience. Il n'envoie ni vos fichiers, ni aucune donnée sur votre utilisation. Il ne se connecte à Internet que pour se mettre à jour et installer ClamAV si vous le demandez, aux adresses listées ci-dessous, et vous pouvez couper la recherche de nouvelles versions.</p>
+      <p><strong>En bref.</strong> FreeAV n'a ni compte en ligne, ni publicité, ni mesure d'audience. Il n'envoie ni vos fichiers, ni aucune donnée sur votre utilisation. Il ne se connecte à Internet que pour se mettre à jour et installer ClamAV si vous le demandez, aux adresses listées ci-dessous, et vous pouvez couper la recherche de nouvelles versions.</p>
     </div>
 
     <h2>Ce que FreeAV ne collecte pas</h2>
     <ul>
-      <li>Aucun compte, aucune inscription, aucune adresse e-mail.</li>
+      <li>Aucun compte en ligne, aucune inscription, aucune adresse e-mail. La connexion à FreeAV, si vous l'activez, reste sur votre PC (voir plus bas).</li>
       <li>Aucune télémétrie : pas de statistiques d'utilisation, pas de rapports de plantage envoyés.</li>
       <li>Aucun fichier envoyé « dans le cloud ». L'analyse se fait sur votre ordinateur, ClamAV compris, et ne fait aucune connexion réseau. Seule exception : le deuxième avis de Microsoft Defender, expliqué plus bas.</li>
       <li>Aucune publicité et aucun traceur.</li>
@@ -83,11 +83,12 @@
       <li>Dans le dossier <code>.freeav</code> de votre profil : la quarantaine, les signatures, votre clé abuse.ch, vos réglages et le journal de l'analyse quotidienne.</li>
       <li>Dans <code>%LOCALAPPDATA%\FreeAV</code> : la copie installée de FreeAV et ClamAV, si vous les avez installés.</li>
       <li>Les sauvegardes de « Réparer mon PC », qui permettent d'annuler une réparation.</li>
+      <li>Si vous activez la connexion à FreeAV, le fichier <code>.freeav\freeav.db</code> de votre profil : votre pseudo, une empreinte scrypt de votre mot de passe et de vos codes de secours (jamais le mot de passe ni les codes eux-mêmes), la clé de votre code à 6 chiffres, chiffrée par Windows, et l'historique des connexions réussies ou ratées, sans aucun secret. Le QR code à scanner est dessiné par FreeAV lui-même : votre clé ne passe par aucun service en ligne. La connexion n'ajoute aucune connexion à Internet.</li>
     </ul>
     <p>Rien de tout cela n'est envoyé ailleurs.</p>
 
     <h2>Supprimer vos données</h2>
-    <p>Désinstallez FreeAV depuis Paramètres &gt; Applications, ou, si vous ne l'avez pas installé, cliquez sur « Tout retirer », puis supprimez FreeAV.exe et, si vous aviez installé ClamAV, le dossier <code>%LOCALAPPDATA%\FreeAV</code>. Vos données personnelles sont gardées dans le dossier <code>.freeav</code> de votre profil, au cas où vous réinstalleriez FreeAV : supprimez ce dossier pour tout effacer.</p>
+    <p>Désinstallez FreeAV depuis Paramètres &gt; Applications, ou, si vous ne l'avez pas installé, cliquez sur « Tout retirer », puis supprimez FreeAV.exe et, si vous aviez installé ClamAV, le dossier <code>%LOCALAPPDATA%\FreeAV</code>. Vos données personnelles sont gardées dans le dossier <code>.freeav</code> de votre profil, au cas où vous réinstalleriez FreeAV : supprimez ce dossier pour tout effacer. « Retirer la connexion », dans FreeAV, efface votre pseudo, votre mot de passe et vos codes, mais garde l'historique des connexions : supprimez le fichier <code>freeav.db</code> pour l'effacer aussi.</p>
 
     <h2>Ce site</h2>
     <p>Ce site n'utilise ni cookies, ni mesure d'audience, ni publicité, ni polices ou scripts venant d'autres sites, et n'a aucun formulaire. Il est hébergé par Netlify, qui reçoit, comme tout hébergeur, l'adresse IP et le navigateur des visiteurs pour afficher les pages (<a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener noreferrer">politique de Netlify</a>). Le fichier FreeAV.exe est téléchargé depuis GitHub (<a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">politique de confidentialité de GitHub</a>).</p>
