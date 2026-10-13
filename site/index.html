@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FreeAV – Antivirus gratuit et libre</title>
+<meta name="description" content="FreeAV est un antivirus gratuit pour Windows et un logiciel libre (GPL-3.0 ou ultérieure) : analyse rapide en un clic, détection par signatures et moteur ClamAV, protection en temps réel, clés USB analysées, mises à jour en un clic et réparation du PC. Sans publicité ni abonnement.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z' fill='%2316a34a'/><path d='m11 16 4 4 7-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z" fill="var(--accent)"/><path d="m11 16 4 4 7-8" stroke="var(--on-accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      FreeAV
+    </a>
+    <nav>
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#nouveautes">Nouveautés</a>
+      <a href="#protection">Protection</a>
+      <a href="#reparer">Réparer mon PC</a>
+      <a href="#telecharger">Télécharger</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero-bg">
+    <div class="wrap hero">
+      <div class="emblem" aria-hidden="true">
+        <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+        <svg viewBox="0 0 64 64" width="88" height="88">
+          <defs>
+            <clipPath id="shieldClip"><path d="M32 4 8 14v16c0 15 10.2 26.8 24 30 13.8-3.2 24-15 24-30V14z"/></clipPath>
+            <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <path d="M32 4 8 14v16c0 15 10.2 26.8 24 30 13.8-3.2 24-15 24-30V14z" fill="var(--accent)"/>
+          <g clip-path="url(#shieldClip)"><rect class="beam" x="0" y="-16" width="64" height="16" fill="url(#beamGrad)"/></g>
+          <path class="check" d="m22 33 7 7 14-16" stroke="var(--on-accent)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="badge">100 % gratuit · Logiciel libre</span>
+      <h1>Protégez votre ordinateur,<br><span class="grad">sans payer un centime.</span></h1>
+      <p class="lead">FreeAV détecte les malwares connus grâce à leurs signatures et au moteur ClamAV, analyse en un clic les endroits à risque, surveille vos téléchargements et vos clés USB en temps réel, et vous aide à réparer les problèmes qu'ils laissent sur votre PC. Pas de publicité, pas d'abonnement, pas de collecte de données.</p>
+      <div class="ctas">
+        <a class="btn btn-primary shine dl-link" href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger pour Windows</a>
+        <a class="btn btn-ghost" href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">Voir le code source</a>
+      </div>
+      <p class="note">Version de test · FreeAV.exe · 14 Mo · <a href="#avertissement">Aide si Windows bloque le fichier</a></p>
+      <div class="scan-demo" id="scanDemo" role="img" aria-label="Démonstration animée : FreeAV analyse des fichiers, trouve un fichier de test EICAR et le met en quarantaine.">
+        <div class="scan-top"><span class="dots"><i></i><i></i><i></i></span><span>FreeAV · Analyse rapide</span></div>
+        <div class="scan-body">
+          <div class="scan-row"><span class="scan-status" data-k="status">Analyse en cours…</span><span class="scan-pct" data-k="pct">0 %</span></div>
+          <div class="bar"><span data-k="bar"></span></div>
+          <div class="scan-file" data-k="file">C:\Users\Public\Documents\facture_2026.pdf</div>
+          <div class="scan-stats">
+            <div><b data-k="count">0</b><span>fichiers analysés</span></div>
+            <div><b class="threats" data-k="threats">0</b><span>menace détectée</span></div>
+          </div>
+          <div class="scan-alert"><span aria-hidden="true">⚠</span><span>eicar_test.com : Eicar-Test-Signature, mis en quarantaine</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="fonctionnalites">
+    <div class="wrap">
+      <h2 class="reveal">Tout l'essentiel, rien de superflu</h2>
+      <p class="sub reveal">Une protection simple et transparente, pensée pour tout le monde.</p>
+      <div class="grid">
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <h3>Analyse rapide ou ciblée</h3>
+          <p>Les endroits à risque en un clic avec « Analyse rapide », ou un fichier, un dossier, un disque, aussi d'un clic droit dans l'Explorateur.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></div>
+          <h3>Signatures à jour</h3>
+          <p>Les nouveaux malwares publiés chaque jour par MalwareBazaar (clé gratuite abuse.ch), plus les signatures officielles de ClamAV, mises à jour en un clic.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+          <h3>Quarantaine</h3>
+          <p>Les fichiers suspects sont isolés en sécurité, vous décidez quoi en faire.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M9.5 12.5 11 14l3.5-3.5"/></svg></div>
+          <h3>Respect de la vie privée</h3>
+          <p>Tout se passe sur votre ordinateur : FreeAV n'envoie aucun fichier. Seule exception, le deuxième avis facultatif de Microsoft Defender : sa protection dans le cloud peut envoyer des échantillons à Microsoft, selon vos réglages Windows. <a href="confidentialite.html">Détails</a></p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+          <h3>Léger et rapide</h3>
+          <p>Ne ralentit pas votre machine quand vous ne l'utilisez pas.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></svg></div>
+          <h3>Logiciel libre</h3>
+          <p>Sous licence GPL-3.0 ou ultérieure : le code est public, chacun peut le vérifier, l'améliorer et le partager.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="nouveautes">
+    <div class="wrap">
+      <p class="center reveal"><span class="badge">Nouveau</span></p>
+      <h2 class="reveal">Plus complet, et toujours gratuit</h2>
+      <p class="sub reveal">FreeAV analyse en un clic les endroits à risque, ajoute de vrais moteurs antivirus, s'installe comme un logiciel classique et se met à jour avec votre accord. Et c'est désormais un logiciel libre, sous licence GPL-3.0 ou ultérieure.</p>
+      <div class="new-grid">
+        <div class="reveal">
+          <div class="scan-demo app-demo clam-ok upd" id="appDemo" role="img" aria-label="Démonstration animée : dans FreeAV, la protection en temps réel est activée et le bandeau passe au vert, ClamAV s'installe en un clic, FreeAV propose sa nouvelle version et se met à jour, puis une analyse rapide se lance.">
+            <div class="scan-top"><span class="dots"><i></i><i></i><i></i></span><span>FreeAV</span></div>
+            <div class="app-banner"><span class="ab-text" data-a="banner">Votre PC est protégé</span><span class="ab-btn" data-a="upd">Mettre à jour FreeAV</span></div>
+            <div class="scan-body">
+              <div class="app-actions"><span class="ab-btn" data-a="quick">Analyse rapide</span><span class="ab-btn ghost">Analyser ce dossier</span></div>
+              <div class="app-row"><span class="cb on" data-a="rt"></span><span>Protection en temps réel</span></div>
+              <div class="app-row"><span class="cb on"></span><span>+ 2e avis Microsoft Defender</span></div>
+              <div class="app-row app-clam"><span class="clam-state" data-a="clam">+ ClamAV intégré : prêt</span><span class="ab-btn ghost" data-a="clamBtn">Mettre à jour ClamAV</span><span class="bar app-bar"><span></span></span></div>
+              <div class="app-row"><span class="cb on"></span><span>Chercher les nouvelles versions</span></div>
+              <div class="app-note" data-a="note">Une nouvelle version de FreeAV est disponible</div>
+            </div>
+          </div>
+          <p class="demo-cap">Le bandeau en haut de FreeAV dit en un coup d'œil si votre PC est protégé : vert quand tout va bien, orange s'il manque un réglage, rouge si une menace a été trouvée.</p>
+        </div>
+        <ul class="checks new-list">
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+            <div><strong>Analyse rapide en un clic</strong><span>Téléchargements, Bureau, dossiers Public, dossier temporaire de votre session, dossiers Démarrage et programmes lancés à l'ouverture de session : là où les malwares arrivent le plus souvent. L'ancien bouton s'appelle maintenant « Analyser ce dossier ».</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M12 8v6"/><path d="M9 11h6"/></svg></div>
+            <div><strong>ClamAV intégré, en un clic</strong><span>« Installer ClamAV (gratuit) » télécharge ClamAV chez Cisco Talos, sans le module RAR, qui n'est pas libre, puis ses signatures officielles, sans droits administrateur. Il sert ensuite à chaque analyse, sur votre PC.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg></div>
+            <div><strong>Deuxième avis de Microsoft Defender</strong><span>Case cochée par défaut : Defender analyse les mêmes dossiers sans rien supprimer, puis FreeAV met lui-même les menaces en quarantaine.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M12 7.5v5"/><path d="m9.5 10.5 2.5 2.5 2.5-2.5"/></svg></div>
+            <div><strong>S'installe comme un vrai logiciel</strong><span>« Installer FreeAV sur ce PC » l'ajoute au menu Démarrer et au Bureau, sans droits administrateur. Il se désinstalle depuis Paramètres &gt; Applications.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 4l7 17 2.5-7.5L21 11z"/></svg></div>
+            <div><strong>« Analyser avec FreeAV » au clic droit</strong><span>Sur un fichier, un dossier ou une clé USB, directement dans l'Explorateur de fichiers.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="6" rx="1"/><rect x="6" y="8" width="12" height="14" rx="2"/><path d="M10.5 4.5h.01"/><path d="M13.5 4.5h.01"/></svg></div>
+            <div><strong>Clés USB analysées au branchement</strong><span>Avec la protection en temps réel, chaque clé USB ou carte mémoire branchée est analysée entièrement, et ses menaces sont mises en quarantaine.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M12 8v5"/><path d="m9.5 10.5 2.5 2.5 2.5-2.5"/></svg></div>
+            <div><strong>FreeAV se met à jour lui-même</strong><span>Il vous prévient quand une nouvelle version sort. Un clic la télécharge, vérifie qu'elle est intacte et redémarre FreeAV. Rien ne change sans votre accord. <a href="#telecharger">Vous aviez déjà FreeAV ?</a></span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="protection">
+    <div class="wrap">
+      <h2 class="reveal">Une protection qui veille pour vous</h2>
+      <p class="sub reveal">Deux réglages dans FreeAV, et votre PC est surveillé sans que vous ayez à y penser.</p>
+      <div class="prot-grid">
+        <article class="prot reveal">
+          <div class="prot-head">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <h3>Protection en temps réel</h3>
+          </div>
+          <p>Cochez la case dans FreeAV : il surveille vos dossiers <strong>Téléchargements</strong> et <strong>Bureau</strong> et analyse chaque nouveau fichier dès qu'il est entièrement écrit. Chaque <strong>clé USB</strong> ou carte mémoire branchée est aussi analysée entièrement. Une menace confirmée part aussitôt en quarantaine et une alerte s'affiche. Un fichier seulement suspect est signalé, sans être déplacé.</p>
+          <div class="mini rt-demo" id="rtDemo" role="img" aria-label="Démonstration animée : trois fichiers arrivent dans Téléchargements, FreeAV les analyse et met le fichier de test en quarantaine.">
+            <div class="mini-top"><span class="live"></span><span>Surveillance active · Téléchargements, Bureau, clés USB</span></div>
+            <ul class="rt-list">
+              <li><span class="f">facture_mars.pdf</span><span class="st ok">Sain</span></li>
+              <li><span class="f">photo_vacances.jpg</span><span class="st ok">Sain</span></li>
+              <li class="gone"><span class="f">eicar_test.com</span><span class="st danger">En quarantaine</span></li>
+            </ul>
+            <div class="rt-alert"><span aria-hidden="true">⚠</span> FreeAV a bloqué eicar_test.com</div>
+          </div>
+        </article>
+        <article class="prot reveal">
+          <div class="prot-head">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <h3>Protection automatique</h3>
+          </div>
+          <p>Un clic sur le bouton suffit, <strong>sans droits administrateur</strong>. Ensuite, FreeAV s'occupe de tout, chaque jour :</p>
+          <div class="mini auto-demo" id="autoDemo" role="img" aria-label="Démonstration animée : chaque jour, FreeAV met à jour ses signatures, analyse Téléchargements et Bureau, contrôle les points sensibles du PC, cherche une nouvelle version et alerte en cas de problème.">
+            <div class="mini-top"><svg class="clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Tâche quotidienne de FreeAV</span></div>
+            <ul class="auto-list">
+              <li class="done"><span>Mise à jour des signatures<small>si une clé abuse.ch gratuite est enregistrée</small></span></li>
+              <li class="done"><span>Analyse de Téléchargements et Bureau</span></li>
+              <li class="done"><span>Contrôle des points sensibles du PC</span></li>
+              <li class="done"><span>Recherche d'une nouvelle version de FreeAV</span></li>
+              <li class="done"><span>Alerte si quelque chose ne va pas</span></li>
+            </ul>
+            <div class="auto-foot"><span class="live"></span><span>Et à chaque ouverture de session, la protection en temps réel démarre.</span></div>
+          </div>
+          <p class="prot-small">Le bouton « Tout retirer » enlève la tâche quotidienne et le démarrage automatique en un clic. L'installation et le retrait ont été testés sur un vrai PC Windows.</p>
+        </article>
+      </div>
+      <p class="beta reveal"><strong>Ce que la protection en temps réel ne fait pas.</strong> Elle vérifie les fichiers juste après leur arrivée dans Téléchargements et Bureau, et les clés USB quand vous les branchez. Elle ne surveille pas tout le disque et n'empêche pas l'ouverture d'un fichier comme le pilote d'un antivirus payant. Gardez Microsoft Defender activé : FreeAV vient en complément.</p>
+    </div>
+  </section>
+
+  <section id="reparer">
+    <div class="wrap">
+      <h2 class="reveal">Réparer mon PC</h2>
+      <p class="sub reveal">FreeAV repère les problèmes que laissent souvent les logiciels malveillants. Il commence par un diagnostic qui ne modifie rien, puis vous choisissez ce qu'il faut réparer.</p>
+      <div class="repair-grid">
+        <ul class="checks">
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></div>
+            <div><strong>Démarrage</strong><span>Programmes lancés au démarrage, tâches planifiées cachées, ouverture de session détournée.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg></div>
+            <div><strong>Réseau</strong><span>Fichier hosts modifié, proxy imposé.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01"/></svg></div>
+            <div><strong>Navigateur</strong><span>Extensions, page d'accueil ou moteur de recherche imposés dans Chrome et Edge.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/></svg></div>
+            <div><strong>Protection</strong><span>Microsoft Defender désactivé ou dossiers exclus de l'analyse.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg></div>
+            <div><strong>Nettoyage</strong><span>Fichiers temporaires inutiles, disque presque plein.</span></div>
+          </li>
+          <li class="reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div>
+            <div><strong>Outils Windows</strong><span>Lancement des outils de réparation intégrés (SFC, DISM) et vidage du cache DNS.</span></div>
+          </li>
+        </ul>
+        <div class="scan-demo repair-demo reveal" id="repairDemo" role="img" aria-label="Démonstration animée : FreeAV trouve cinq problèmes sans rien modifier, puis répare ceux que l'utilisateur a choisis.">
+          <div class="scan-top"><span class="dots"><i></i><i></i><i></i></span><span>FreeAV · Réparer mon PC</span></div>
+          <div class="scan-body">
+            <div class="scan-row"><span class="scan-status" data-r="status">Diagnostic en cours…</span><span class="scan-pct" data-r="count"></span></div>
+            <ul class="rd-list">
+              <li><span class="sev danger">Danger</span><span class="rd-title">Programme au démarrage : updater32.exe</span><span class="rd-done">Réparé</span></li>
+              <li><span class="sev danger">Danger</span><span class="rd-title">Microsoft Defender désactivé</span><span class="rd-done">Réparé</span></li>
+              <li><span class="sev suspect">Suspect</span><span class="rd-title">Redirection dans le fichier hosts</span><span class="rd-done">Réparé</span></li>
+              <li><span class="sev suspect">Suspect</span><span class="rd-title">Chrome : moteur de recherche imposé</span><span class="rd-done">Réparé</span></li>
+              <li><span class="sev info">Info</span><span class="rd-title">2 140 Mo de fichiers temporaires</span><span class="rd-done">Nettoyé</span></li>
+            </ul>
+            <div class="rd-foot"><span class="rd-btn" data-r="btn">Réparer la sélection</span><span class="rd-note" data-r="note">Rien n'a été modifié</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid safe-grid">
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3>Diagnostic sans risque</h3>
+          <p>La première étape regarde seulement. Rien n'est modifié sur votre PC.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg></div>
+          <h3>Vous gardez la main</h3>
+          <p>Rien n'est réparé sans votre accord : vous choisissez chaque réparation.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></div>
+          <h3>Retour en arrière</h3>
+          <p>Chaque modification est sauvegardée et peut être annulée. Seuls le nettoyage et les outils Windows sont définitifs, et c'est indiqué avant.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Point de restauration</h3>
+          <p>Lancé en administrateur, FreeAV crée un point de restauration Windows avant de réparer.</p>
+        </div>
+      </div>
+      <p class="beta reveal"><strong>Fonction en test.</strong> Elle est conçue pour Windows et a été vérifiée sur un PC de test simulé, mais pas encore sur de vrais ordinateurs. Gardez une sauvegarde de vos fichiers importants. En ligne de commande : <code>python -m freeav repair</code>.</p>
+    </div>
+  </section>
+
+  <section id="comment">
+    <div class="wrap">
+      <h2 class="reveal">Comment ça marche</h2>
+      <p class="sub reveal">Quelques clics, et vous êtes protégé.</p>
+      <ol class="steps">
+        <li class="reveal"><strong>Téléchargez FreeAV.exe et ouvrez-le.</strong><br><span class="muted">Gratuit, sans inscription. Cliquez ensuite sur « Installer FreeAV sur ce PC » pour le retrouver dans le menu Démarrer.</span></li>
+        <li class="reveal"><strong>Activez la protection.</strong><br><span class="muted">Cochez « Protection en temps réel » et cliquez sur « Protection automatique ». Le bandeau passe au vert.</span></li>
+        <li class="reveal"><strong>Ajoutez ClamAV (conseillé).</strong><br><span class="muted">Un clic sur « Installer ClamAV (gratuit) » ajoute un moteur antivirus complet à chaque analyse (environ 146 Mo à télécharger, plus 300 Mo de signatures).</span></li>
+        <li class="reveal"><strong>Lancez une analyse.</strong><br><span class="muted">« Analyse rapide » vérifie les endroits à risque en un clic. Pour un dossier précis : « Analyser ce dossier », ou un clic droit sur un fichier, un dossier ou une clé USB, puis « Analyser avec FreeAV ».</span></li>
+        <li class="reveal"><strong>Gérez les menaces détectées.</strong><br><span class="muted">Mettez-les en quarantaine ou supprimez-les en un clic.</span></li>
+        <li class="reveal"><strong>Réparez votre PC si besoin.</strong><br><span class="muted">Avec « Réparer mon PC » : un diagnostic d'abord, puis seulement les réparations que vous choisissez.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="telecharger">
+    <div class="wrap reveal">
+      <div class="download">
+        <div class="app-icon" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><path d="M32 4 8 14v16c0 15 10.2 26.8 24 30 13.8-3.2 24-15 24-30V14z" fill="var(--accent)"/><path d="m22 33 7 7 14-16" stroke="var(--on-accent)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2>Télécharger FreeAV</h2>
+        <p class="sub flush">Gratuit, sans inscription. Double-cliquez sur le fichier téléchargé pour ouvrir FreeAV.</p>
+        <div class="platforms"><span>Windows</span><span>FreeAV.exe · 14 Mo</span><span class="tag-test">Version de test</span></div>
+        <a class="btn btn-primary btn-big shine dl-link" href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe"><svg class="dl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Télécharger FreeAV pour Windows</a>
+        <p class="update-note"><strong>Vous aviez déjà FreeAV ?</strong> Mettez-le à jour avant d'installer ClamAV : les versions d'avant le 12 octobre 2026 ne trouvent plus ClamAV. Cliquez sur « Mettre à jour FreeAV ». Si votre copie date d'avant le 11 octobre 2026, elle n'a pas ce bouton : téléchargez-la encore une fois ici. Ensuite, c'est FreeAV qui vous proposera chaque nouvelle version.</p>
+        <p class="defender-note"><strong>Analysé par Microsoft Defender.</strong> Chaque FreeAV.exe publié est analysé par Microsoft Defender pendant sa construction, avec des signatures à jour et un contrôle sur le fichier de test EICAR. Le résultat est écrit dans les <a href="https://github.com/yassinechk98-lang/dev/releases/tag/freeav-test" target="_blank" rel="noopener noreferrer">notes de version</a> : au 12 octobre 2026, aucune menace détectée (signatures 1.459.688.0). Ce contrôle n'est ni une validation ni une certification par Microsoft.</p>
+        <p class="dl-links"><a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe.sha256">Empreinte SHA-256</a> · <a href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">Code source sur GitHub</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a> · <a href="https://github.com/yassinechk98-lang/dev/blob/main/antivirus/LICENSE" target="_blank" rel="noopener noreferrer">Licence GPL-3.0 ou ultérieure</a> · macOS et Linux : depuis le code source</p>
+
+        <div class="smartscreen" id="avertissement">
+          <div class="ss-mock" aria-hidden="true">
+            <div class="ss-title">Windows a protégé votre ordinateur</div>
+            <div class="ss-lines"><i></i><i></i><i></i></div>
+            <span class="ss-more">Informations complémentaires</span>
+            <div class="ss-btns"><span class="ss-run">Exécuter quand même</span><span class="ss-no">Ne pas exécuter</span></div>
+          </div>
+          <div class="ss-help">
+            <h3>Si Windows bloque le fichier</h3>
+            <p>FreeAV n'est pas encore signé numériquement, donc Windows SmartScreen peut afficher « Windows a protégé votre ordinateur ». Pour l'ouvrir quand même :</p>
+            <ol class="ss-steps">
+              <li><span class="ss-n">1</span><span>Cliquez sur <strong>« Informations complémentaires »</strong>.</span></li>
+              <li><span class="ss-n">2</span><span>Puis sur <strong>« Exécuter quand même »</strong>.</span></li>
+            </ol>
+            <p class="ss-note">Certains antivirus peuvent aussi signaler le fichier par erreur. Téléchargez FreeAV uniquement depuis cette page, et comparez son empreinte SHA-256 si vous voulez vérifier qu'il n'a pas été modifié.</p>
+          </div>
+        </div>
+        <p class="beta"><strong>Version de test.</strong> Elle est construite à partir du code en cours de développement et peut encore contenir des bugs. Gardez la protection de Windows activée.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2 class="reveal">Questions fréquentes</h2>
+      <p class="sub reveal">Ce qu'on nous demande le plus souvent.</p>
+      <details class="reveal"><summary>FreeAV est-il vraiment gratuit ?</summary><p>Oui. Pas de version premium, pas de publicité, pas d'abonnement caché. C'est aussi un logiciel libre, sous licence GPL-3.0 ou toute version ultérieure : son code est public et le restera.</p></details>
+      <details class="reveal"><summary>Comment FreeAV détecte-t-il les virus ?</summary><p>FreeAV compare l'empreinte de vos fichiers à une base de malwares connus, enrichie chaque jour par la base publique MalwareBazaar (avec une clé gratuite abuse.ch), et peut utiliser des règles YARA open source. Un clic sur « Installer ClamAV (gratuit) » télécharge ClamAV chez Cisco Talos, sans le module RAR, qui n'est pas libre (environ 146 Mo, plus environ 300 Mo de signatures). Il est ensuite utilisé à chaque analyse, mais n'analyse pas l'intérieur des archives RAR. Microsoft Defender peut aussi donner un deuxième avis : la case est cochée par défaut.</p></details>
+      <details class="reveal"><summary>FreeAV remplace-t-il Windows Defender ?</summary><p>Non, il le complète. La protection en temps réel de FreeAV surveille Téléchargements et Bureau et vérifie les fichiers juste après leur arrivée, mais elle n'empêche pas l'ouverture d'un fichier comme le fait Microsoft Defender. Gardez Defender activé.</p></details>
+      <details class="reveal"><summary>Mes fichiers sont-ils envoyés sur Internet ?</summary><p>Non. L'analyse se fait entièrement sur votre PC, ClamAV compris. FreeAV se connecte seulement pour télécharger des signatures et ClamAV, et pour vérifier sur github.com s'il existe une nouvelle version de FreeAV (décochez « Chercher les nouvelles versions » pour l'arrêter). Si vous gardez le deuxième avis de Microsoft Defender, Defender suit ses propres réglages Windows, comme d'habitude. Tous les détails sont sur la page <a href="confidentialite.html">Confidentialité</a>.</p></details>
+      <details class="reveal"><summary>Comment mettre à jour FreeAV ?</summary><p>FreeAV vous prévient à son ouverture quand une nouvelle version existe, et l'analyse quotidienne aussi. Cliquez sur « Mettre à jour FreeAV » : il la télécharge, vérifie son empreinte, remplace l'ancienne version et redémarre. Rien ne change sans votre accord. Si vous avez téléchargé FreeAV avant le 11 octobre 2026, téléchargez-le une fois de plus <a href="#telecharger">depuis cette page</a> : cette version-là ne sait pas encore se mettre à jour. Une version d'avant le 12 octobre 2026 doit être mise à jour avant que « Installer ClamAV » fonctionne.</p></details>
+      <details class="reveal"><summary>Comment désinstaller FreeAV ?</summary><p>Si vous l'avez installé avec « Installer FreeAV sur ce PC », désinstallez-le depuis Paramètres &gt; Applications, comme n'importe quel logiciel : sa protection automatique est retirée aussi. Sinon, cliquez sur « Tout retirer » dans FreeAV, puis supprimez FreeAV.exe et, si vous aviez installé ClamAV, le dossier %LOCALAPPDATA%\FreeAV. Votre quarantaine et votre journal restent dans le dossier .freeav de votre profil.</p></details>
+      <details class="reveal"><summary>« Réparer mon PC » peut-il abîmer mon ordinateur ?</summary><p>Le diagnostic ne modifie rien. Ensuite, FreeAV ne répare que ce que vous choisissez et sauvegarde chaque modification pour pouvoir l'annuler. Le nettoyage des fichiers temporaires et les outils Windows ne s'annulent pas : c'est indiqué avant de les lancer. La fonction est encore en test, gardez une sauvegarde de vos fichiers importants.</p></details>
+      <details class="reveal"><summary>Pourquoi Windows affiche-t-il un avertissement ?</summary><p>FreeAV n'est pas encore signé numériquement, et Windows SmartScreen se méfie des applications qu'il ne connaît pas encore. Cliquez sur « Informations complémentaires » puis sur « Exécuter quand même ». Pour vérifier que votre fichier est bien l'original, comparez-le avec l'<a href="https://github.com/yassinechk98-lang/dev/releases/download/freeav-test/FreeAV.exe.sha256">empreinte SHA-256</a> publiée.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">FreeAV · Logiciel libre (GPL-3.0 ou ultérieure) · <a href="https://github.com/yassinechk98-lang/dev" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="signature.html">Politique de signature du code (Code signing policy)</a></div>
+</footer>
+
+<div class="toast" id="dlToast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
