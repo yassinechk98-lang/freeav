@@ -72,6 +72,7 @@ FreeAV.exe contient le moteur YARA (yara-python, version figee dans `requirement
   malwares arrivent ou s'installent le plus souvent, en quelques minutes.
 - **Ligne de commande** et **interface graphique** (Tkinter), avec un bandeau qui dit en un coup
   d'oeil si le PC est protege.
+- Interface disponible en anglais (choix **Langue / Language** dans la fenetre principale).
 
 ## Reparer mon PC
 
@@ -119,8 +120,11 @@ tard, la modifier ou la retirer.
   SQLite, `~/.freeav/freeav.db` (`C:\Users\<vous>\.freeav\freeav.db`), qui ne garde que des
   empreintes scrypt du mot de passe et des codes de secours, et la cle OTP chiffree par Windows
   (DPAPI : elle ne sert que dans votre session Windows).
-- **Mot de passe oublie** : un code de l'application OTP, ou l'un des 8 codes de secours affiches a
-  la creation (chacun ne sert qu'une fois), permet d'en choisir un nouveau.
+- **Mot de passe oublie** : l'un des 8 codes de secours affiches a la creation (chacun ne sert
+  qu'une fois) permet d'en choisir un nouveau. Le code de l'application OTP ne suffit pas : il
+  s'ajoute au mot de passe, il ne le remplace pas.
+- **Verrouillage automatique** apres 10 minutes sans clavier ni souris ; la cle OTP et les codes de
+  secours copies sont effaces du presse-papiers apres 1 minute.
 - **Essais limites** : apres 5 erreurs, FreeAV impose une attente de 30 secondes, qui double a chaque
   nouvelle erreur (15 minutes au plus). Un code OTP deja utilise est refuse.
 - **Verrouiller** (ou Ctrl+L) cache la fenetre jusqu'a la prochaine connexion. La protection en temps

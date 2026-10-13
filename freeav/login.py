@@ -46,7 +46,7 @@ HISTORY_KEEP = 200  # evenements gardes dans la table historique
 ISSUER = "FreeAV"
 NICKNAME_RE = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
 MIN_PASSWORD, MAX_PASSWORD = 12, 128
-SCRYPT = {"n": 2 ** 15, "r": 8, "p": 1}          # mot de passe (environ 0,1 s par essai)
+SCRYPT = {"n": 2 ** 17, "r": 8, "p": 1}          # mot de passe : minimum OWASP (128 Mo)
 SCRYPT_RECOVERY = {"n": 2 ** 14, "r": 8, "p": 1}  # codes de secours (8 a verifier au pire)
 RECOVERY_CODES = 8
 RECOVERY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sans 0/O ni 1/I, faciles a recopier
@@ -54,8 +54,6 @@ OTP_STEP, OTP_DIGITS = 30, 6
 MAX_FAILURES = 5      # ensuite, attente croissante avant chaque nouvel essai
 BASE_DELAY = 30       # secondes, doublee a chaque nouvel echec...
 MAX_DELAY = 15 * 60   # ... sans depasser 15 minutes
-GENERIC_ERROR = "Pseudo ou mot de passe incorrect."
-CODE_ERROR = "Code incorrect ou expiré."
 COMMON_PASSWORDS = {
     "motdepasse123", "motdepasse1234", "123456789012", "1234567890123", "azertyuiop12",
     "azertyuiop123", "qwertyuiop12", "qwertyuiop123", "password1234", "password12345",
@@ -63,15 +61,34 @@ COMMON_PASSWORDS = {
 }
 
 
+class Message(str):
+    """Texte en francais pour l'utilisateur, qui garde son modele et ses valeurs : l'interface
+    peut ainsi le traduire (login_gui.tr), sans que login.py depende de i18n."""
+
+    def __new__(cls, template: str, **params):
+        self = super().__new__(cls, template.format(**params) if params else template)
+        self.template, self.params = template, params
+        return self
+
+
+GENERIC_ERROR = Message("Pseudo ou mot de passe incorrect.")
+CODE_ERROR = Message("Code incorrect ou expiré.")
+
+
 class LoginError(Exception):
-    """Refus a montrer tel quel a l'utilisateur."""
+    """Refus a montrer tel quel a l'utilisateur (str(exc), en francais ; exc.message garde le
+    Message a traduire)."""
+
+    @property
+    def message(self) -> str:
+        return self.args[0] if self.args else ""
 
 
 class CodeRequired(LoginError):
     """Pseudo et mot de passe corrects : il faut maintenant le code OTP."""
 
     def __init__(self):
-        super().__init__("Entrez le code de votre application d'authentification.")
+        super().__init__(Message("Entrez le code de votre application d'authentification."))
 
 
 class StorageError(LoginError):
@@ -81,13 +98,14 @@ class StorageError(LoginError):
 class Locked(LoginError):
     def __init__(self, wait: int):
         self.wait = wait
-        super().__init__(f"Trop d'essais. Réessayez dans {_duration(wait)}.")
+        super().__init__(Message("Trop d'essais. Réessayez dans {duration}.",
+                                 duration=_duration(wait)))
 
 
-def _duration(seconds: int) -> str:
+def _duration(seconds: int) -> Message:
     if seconds < 90:
-        return f"{seconds} secondes"
-    return f"{(seconds + 59) // 60} minutes"
+        return Message("{count} secondes", count=seconds)
+    return Message("{count} minutes", count=(seconds + 59) // 60)
 
 
 @dataclass
@@ -128,7 +146,7 @@ def _normalize(text: str) -> bytes:
 
 
 def _scrypt(secret: bytes, salt: bytes, params: dict) -> bytes:
-    return hashlib.scrypt(secret, salt=salt, maxmem=128 * 1024 * 1024, dklen=32, **params)
+    return hashlib.scrypt(secret, salt=salt, maxmem=256 * 1024 * 1024, dklen=32, **params)
 
 
 def _hash(secret: bytes, params: dict, salt: bytes | None = None) -> dict:
@@ -175,15 +193,23 @@ def unpack_hash(text: str) -> dict:
         return {}  # illisible : ne correspond a rien
 
 
+def _upgrade(account: Account, password: str) -> None:
+    """Empreinte refaite avec les reglages actuels si elle date d'une version plus faible
+    (le mot de passe vient d'etre verifie : c'est le seul moment ou on l'a en clair)."""
+    if any(account.password.get(k) != v for k, v in SCRYPT.items()):
+        account.password = hash_password(password)
+
+
 def password_problem(password: str, nickname: str = "") -> str | None:
     """Pourquoi ce mot de passe est refuse, ou None."""
     if not MIN_PASSWORD <= len(password) <= MAX_PASSWORD:
-        return f"Le mot de passe doit faire de {MIN_PASSWORD} à {MAX_PASSWORD} caractères."
+        return Message("Le mot de passe doit faire de {min} à {max} caractères.",
+                       min=MIN_PASSWORD, max=MAX_PASSWORD)
     lowered = password.strip().lower()
     if nickname and lowered == nickname.strip().lower():
-        return "Le mot de passe ne doit pas être votre pseudo."
+        return Message("Le mot de passe ne doit pas être votre pseudo.")
     if len(set(password)) <= 2 or lowered in COMMON_PASSWORDS:
-        return "Ce mot de passe est trop facile à deviner."
+        return Message("Ce mot de passe est trop facile à deviner.")
     return None
 
 
@@ -396,9 +422,9 @@ def _connect(path, create: bool) -> sqlite3.Connection | None:
 
 
 def _storage_error(path: Path, exc: Exception) -> StorageError:
-    return StorageError(f"Base de la connexion illisible ou occupée ({exc}). Si DBeaver "
-                        f"l'utilise, fermez-le puis réessayez. Pour retirer la connexion, "
-                        f"supprimez {path}.")
+    return StorageError(Message("Base de la connexion illisible ou occupée ({error}). Si "
+                                "DBeaver l'utilise, fermez-le puis réessayez. Pour retirer la "
+                                "connexion, supprimez {path}.", error=exc, path=path))
 
 
 def load(path: Path | None = None) -> Account | None:
@@ -530,7 +556,8 @@ def history(path: Path | None = None, limit: int = 50) -> list[tuple[str, str]]:
 
 def nickname_problem(nickname: str) -> str | None:
     if not NICKNAME_RE.match(nickname.strip()):
-        return "Le pseudo doit faire 3 à 32 caractères : lettres, chiffres, point, tiret ou _."
+        return Message("Le pseudo doit faire 3 à 32 caractères : lettres, chiffres, point, tiret "
+                       "ou _.")
     return None
 
 
@@ -545,7 +572,8 @@ def create(nickname: str, password: str, otp_secret: str = "", otp_code: str = "
     if otp_secret:
         counter = totp_counter(otp_secret, otp_code, now)
         if counter is None:
-            raise LoginError("Code incorrect. Vérifiez que l'heure du téléphone est juste.")
+            raise LoginError(Message("Code incorrect. Vérifiez que l'heure du téléphone est "
+                                 "juste."))
         account.otp_secret, account.otp_last = otp_secret, counter
     codes = new_recovery_codes()
     account.recovery = [_hash_recovery(c) for c in codes]
@@ -565,7 +593,7 @@ def wait_time(account: Account, now: float | None = None) -> int:
 def _guard(path, now: float) -> Account:
     account = load(path)
     if account is None:
-        raise LoginError("La connexion n'est pas activée.")
+        raise LoginError(Message("La connexion n'est pas activée."))
     if wait := wait_time(account, now):
         raise Locked(wait)
     return account
@@ -620,31 +648,36 @@ def verify(nickname: str, password: str, code: str | None = None,
         _failed(account, path, now, GENERIC_ERROR,
                 "Échec de connexion : pseudo ou mot de passe incorrect")
     if not account.otp:
+        _upgrade(account, password)
         return _succeeded(account, path, now, "Connexion réussie")
     if not code:
         raise CodeRequired()
     counter, recovery = _second_factor(account, code, now)
     if counter is None and recovery is None:
         _failed(account, path, now, CODE_ERROR, "Échec de connexion : code incorrect")
+    _upgrade(account, password)
     return _succeeded(account, path, now, "Connexion réussie", recovery, counter)
 
 
 def reset_password(nickname: str, code: str, new_password: str,
                    path: Path | None = None, now: float | None = None) -> Unlock:
-    """Mot de passe oublie : un code OTP ou un code de secours (qui est alors consomme)."""
+    """Mot de passe oublie : un code de secours, qui est alors consomme."""
     now = time.time() if now is None else now
     account = _guard(path, now)
     if problem := password_problem(new_password, nickname or account.nickname):
         raise LoginError(problem)
     ok_nickname = hmac.compare_digest(nickname.strip().lower().encode(),
                                       account.nickname.lower().encode())
-    counter, recovery = _second_factor(account, code, now)
-    if not ok_nickname or (counter is None and recovery is None):
-        _failed(account, path, now, "Pseudo ou code incorrect.",
+    # Seul un code de secours (note a part, a usage unique) remplace le mot de passe : avec
+    # le code OTP seul, quelqu'un qui a le telephone entrerait sans le mot de passe, et les
+    # deux etapes n'en feraient plus qu'une.
+    recovery = _find_recovery(account, code)
+    if not ok_nickname or recovery is None:
+        _failed(account, path, now, Message("Pseudo ou code de secours incorrect."),
                 "Échec de « mot de passe oublié » : pseudo ou code incorrect")
     account.password = hash_password(new_password)
     return _succeeded(account, path, now, "Mot de passe oublié : nouveau mot de passe choisi",
-                      recovery, counter)
+                      recovery)
 
 
 # -- reglages (apres une nouvelle verification du mot de passe dans l'interface) ----------
@@ -652,7 +685,7 @@ def reset_password(nickname: str, code: str, new_password: str,
 def _require(path) -> Account:
     account = load(path)
     if account is None:
-        raise LoginError("La connexion n'est pas activée.")
+        raise LoginError(Message("La connexion n'est pas activée."))
     return account
 
 
@@ -669,7 +702,8 @@ def enable_otp(secret: str, code: str, path: Path | None = None,
     account = _require(path)
     counter = totp_counter(secret, code, now)
     if counter is None:
-        raise LoginError("Code incorrect. Vérifiez que l'heure du téléphone est juste.")
+        raise LoginError(Message("Code incorrect. Vérifiez que l'heure du téléphone est "
+                                 "juste."))
     account.otp_secret, account.otp_last = secret, counter
     save(account, path, "Code OTP activé", now=now)
 

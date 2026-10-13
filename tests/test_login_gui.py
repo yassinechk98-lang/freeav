@@ -198,7 +198,7 @@ def test_forgot_password_refuses_a_wrong_code(root):
     window.f_confirm.set(NEW_PASSWORD)
     window.submit_forgot()
     wait_for(root, lambda: not window.busy)
-    assert window.notice.text == "Pseudo ou code incorrect."
+    assert window.notice.text == "Pseudo ou code de secours incorrect."
     login.verify("Yassine", PASSWORD)  # l'ancien mot de passe marche toujours
     window.destroy()
 
@@ -334,3 +334,43 @@ def test_strength_meter_labels(root):
     assert meter.label.cget("text") == "Trop facile"
     meter.update_for("Tr3s-l0ng-et-varie-!")
     assert meter.score >= 3
+
+
+def test_copied_secret_leaves_the_clipboard(root, monkeypatch):
+    monkeypatch.setattr(login_gui, "CLIPBOARD_CLEAR_MS", 200)
+    window = login_gui.AccessWindow(root, "setup")
+    window._copy("CLE-SECRETE", "Clé copiée.")
+    assert root.clipboard_get() == "CLE-SECRETE"
+    assert "presse-papiers" in window.notice.text
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        root.update()
+        try:
+            if root.clipboard_get() != "CLE-SECRETE":
+                break
+        except tk.TclError:
+            break  # presse-papiers vide
+        time.sleep(0.05)
+    with pytest.raises(tk.TclError):
+        root.clipboard_get()
+    window.destroy()
+
+
+def test_idle_window_locks_itself_only_when_sign_in_is_on(root, monkeypatch):
+    locked = []
+    monkeypatch.setattr(login_gui, "lock", lambda app: locked.append(app))
+    now = [0.0]
+    app = tk.Toplevel(root)
+    login_gui.watch_idle(app, delay=600, clock=lambda: now[0], every_ms=20)
+    now[0] = 1000.0
+    for _ in range(20):
+        root.update()
+        time.sleep(0.02)
+    assert locked == []  # connexion pas activee : jamais de verrouillage
+    login.create("Yassine", PASSWORD)
+    for _ in range(20):
+        root.update()
+        time.sleep(0.02)
+    assert locked == [app]
+    app.destroy()
+

@@ -14,6 +14,11 @@ freeav/data/clamav.json
 freeav/data/build.json
 packaging/version_info.txt
 
+# Secrets et donnees locales : jamais dans le depot
+.env
+.env.*
+*.db
+
 # Outils locaux
 .claude/
 .vscode/
