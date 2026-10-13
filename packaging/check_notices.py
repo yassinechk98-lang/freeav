@@ -27,8 +27,10 @@ BINARIES = [
      ["10. Bibliotheques d'execution Microsoft"]),
     (r"yara\.cp3\d+-win_amd64\.pyd",
      ["6. YARA (libyara)", "7. yara-python", "8. authenticode-parser", "3. OpenSSL 3"]),
+    (r"sqlite3\.dll", ["11. SQLite"]),
+    (r"_sqlite3\.pyd", ["1. Python 3.12", "11. SQLite"]),
     # Modules de la bibliotheque standard sans licence a part dans les mentions : refuses
-    (r"_(bz2|lzma|sqlite3)\.pyd", ["(bzip2, liblzma ou SQLite : exclure le module ou ajouter sa licence)"]),
+    (r"_(bz2|lzma)\.pyd", ["(bzip2 ou liblzma : exclure le module ou ajouter sa licence)"]),
     (r"_?[a-z0-9_]+\.pyd", ["1. Python 3.12"]),
 ]
 DATA = [("_tcl_data/", ["4. Tcl 8.6"]), ("_tk_data/", ["5. Tk 8.6"])]

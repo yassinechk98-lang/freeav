@@ -21,6 +21,7 @@ Sommaire :
   8. authenticode-parser
   9. PyInstaller (chargeur et modules d'execution)
  10. Bibliotheques d'execution Microsoft (System Libraries)
+ 11. SQLite (base locale de la connexion a FreeAV)
 
 ==============================================================================
 1. Python 3.12 (CPython)
@@ -2349,3 +2350,22 @@ leur code source n'est pas couvert par la licence de FreeAV. Ils sont redistribu
 selon les conditions de Microsoft pour le "Distributable Code" de Visual Studio.
 
 Copyright (c) Microsoft Corporation. Tous droits reserves.
+
+==============================================================================
+11. SQLite
+Licence : blessing (domaine public)
+Dans FreeAV.exe : sqlite3.dll, _sqlite3.pyd (module sqlite3 : base locale de la connexion)
+==============================================================================
+
+All of the code and documentation in SQLite has been dedicated to the public
+domain by the authors. Anyone is free to copy, modify, publish, use, compile,
+sell, or distribute the original SQLite code, either in source code form or as
+a compiled binary, for any purpose, commercial or non-commercial, and by any
+means. (https://www.sqlite.org/copyright.html)
+
+The author disclaims copyright to this source code.  In place of
+a legal notice, here is a blessing:
+
+    May you do good and not evil.
+    May you find forgiveness for yourself and forgive others.
+    May you share freely, never taking more than you give.
